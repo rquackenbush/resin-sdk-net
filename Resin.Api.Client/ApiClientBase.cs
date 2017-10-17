@@ -1,8 +1,9 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
-using Resin.Api.Client;
+using Newtonsoft.Json;
 
 namespace Resin.Api.Client
 {
@@ -10,7 +11,7 @@ namespace Resin.Api.Client
     {
         private readonly string _baseAddress;
 
-        protected ApiClientBase(string bearerToken, string baseAddress = "https://api.resin.io/v1")
+        protected ApiClientBase(string bearerToken, string baseAddress)
         {
             BearerToken = bearerToken;
             _baseAddress = baseAddress;
@@ -57,6 +58,31 @@ namespace Resin.Api.Client
                 }
 
                 throw new ApiClientException($"{response.StatusCode}: {response.ReasonPhrase} {content}");
+            }
+        }
+
+        protected async Task<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken)
+            where TResponse : class
+        {
+            using (var client = CreateHttpClient())
+            {
+                //Perform the get
+                HttpResponseMessage response = await client.GetAsync(requestUri, cancellationToken);
+
+                //Check for error
+                await ThrowOnErrorAsync(response);
+
+                //get the response
+                string json = await response.Content.ReadAsStringAsync();
+
+                //Log the response
+                await LogResponse(json);
+
+                //Deserialize the response
+                ODataResponse<TResponse> resinResponse = JsonConvert.DeserializeObject<ODataResponse<TResponse>>(json);
+
+                //And return the deserialized object(s)
+                return resinResponse?.D;
             }
         }
     }

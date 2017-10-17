@@ -43,12 +43,27 @@ namespace resin
             var client = new ResinClient(token);
 
             ResinApplication[] applications = await client.GetApplicationsAsync();
-            DisplayObjects(applications, a => a.AppName);
+            //DisplayObjects(applications, a => a.AppName);
 
-            var devices = await client.GetDevicesAsync();
-            DisplayObjects(devices, d => d.Name);
+            int applicationId = applications[0].Id;
 
-            //await client.RestartAsync(666, 666);
+            var variables = await client.GetApplicationEnvironmentVariablesAsync(applicationId);
+
+            //var devices = await client.GetDevicesAsync();
+
+            //int deviceId = devices[0].Id;
+
+            //var variables = await client.GetDeviceEnvironmentalVariablesAsync(deviceId);
+
+            foreach (var variable in variables)
+            {
+                Console.WriteLine($" {variable.Name}: {variable.Value}");
+            }
+
+            //var devices = await client.GetDevicesAsync();
+            //DisplayObjects(devices, d => d.Name);
+
+            //await client.RestartDeviceAsync(666, 666);
         }
 
         private static void DisplayObjects<TObject>(TObject[] items, Func<TObject, string> nameFunc)
