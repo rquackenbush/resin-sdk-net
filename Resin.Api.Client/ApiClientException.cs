@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace Resin.Api.Client
 {
-    public class ApiClientException : Exception
+    public class ApiClientException : ApplicationException
     {
         public ApiClientException()
         {

@@ -5,28 +5,31 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
 {
     public abstract class ApiClientBase
     {
+        private readonly ITokenProvider _tokenProvider;
         private readonly string _baseAddress;
 
         protected const string ContentTypeJson = "application/json";
 
-        protected ApiClientBase(string bearerToken, string baseAddress)
+        protected ApiClientBase(ITokenProvider tokenProvider, string baseAddress)
         {
-            BearerToken = bearerToken;
+            if (tokenProvider == null) throw new ArgumentNullException(nameof(tokenProvider));
+            _tokenProvider = tokenProvider;
             _baseAddress = baseAddress;
         }
 
-        protected string BearerToken { get; set; }
-
-        protected HttpClient CreateHttpClient()
+        protected async Task<HttpClient> CreateHttpClientAsync(CancellationToken cancellationToken)
         {
+            string token = await _tokenProvider.GetTokenAsync(cancellationToken);
+
             var client = new HttpClient();
 
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(ContentTypeJson));
 
             client.BaseAddress = new Uri(_baseAddress);
@@ -41,19 +44,20 @@ namespace Resin.Api.Client
             return Task.CompletedTask;
         }
 
-
         /// <summary>
         /// Throws an exception if the 
         /// </summary>
         /// <param name="response"></param>
         protected virtual async Task ThrowOnErrorAsync(HttpResponseMessage response)
         {
+            //Check to see if it was successful.
             if (!response.IsSuccessStatusCode)
             {
                 string content = null;
 
                 try
                 {
+                    //Try to get the string data.
                     content = await response.Content.ReadAsStringAsync();
                 }
                 catch (Exception)
@@ -64,10 +68,16 @@ namespace Resin.Api.Client
             }
         }
 
+        /// <summary>
+        /// Perform a get and return a deserialized response.
+        /// </summary>
+        /// <typeparam name="TResponse"></typeparam>
+        /// <param name="requestUri"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         protected async Task<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken)
-            where TResponse : class
         {
-            using (var client = CreateHttpClient())
+            using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
                 //Perform the get
                 HttpResponseMessage response = await client.GetAsync(requestUri, cancellationToken);
@@ -82,18 +92,22 @@ namespace Resin.Api.Client
                 await LogResponseAsync(json);
 
                 //Deserialize the response
-                ODataResponse<TResponse> resinResponse = JsonConvert.DeserializeObject<ODataResponse<TResponse>>(json);
-
-                //And return the deserialized object(s)
-                return resinResponse?.D;
+                return JsonConvert.DeserializeObject<TResponse>(json);
             }
         }
 
+        /// <summary>
+        /// Post a json request and return the deserialized result.
+        /// </summary>
+        /// <typeparam name="TResponse"></typeparam>
+        /// <param name="requestUri"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         protected async Task<TResponse> PostAsync<TResponse>(string requestUri, object request,
             CancellationToken cancellationToken)
-            where TResponse : class
         {
-            using (var client = CreateHttpClient())
+            using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
                 string requestJson = JsonConvert.SerializeObject(request);
 
@@ -112,16 +126,19 @@ namespace Resin.Api.Client
                 await LogResponseAsync(json);
 
                 //Deserialize the response
-                ODataResponse<TResponse> resinResponse = JsonConvert.DeserializeObject<ODataResponse<TResponse>>(json);
-
-                //And return the deserialized object(s)
-                return resinResponse?.D;
+                return JsonConvert.DeserializeObject<TResponse>(json);
             }
         }
 
+        /// <summary>
+        /// Posts an empty request and returns the string result.
+        /// </summary>
+        /// <param name="requestUri"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         protected async Task<string> PostRawAsync(string requestUri, CancellationToken cancellationToken)
         {
-            using (var client = CreateHttpClient())
+            using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
                 StringContent requestContent = new StringContent("");
 
@@ -140,26 +157,10 @@ namespace Resin.Api.Client
         /// PATCH
         /// </summary>
         /// <param name="requestUri"></param>
-        /// <param name="content"></param>
+        /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<HttpResponseMessage> PatchAsync(string requestUri, HttpContent content, CancellationToken cancellationToken = new CancellationToken())
-        {
-            using (var client = CreateHttpClient())
-            {
-                // https://stackoverflow.com/a/29772349/232566
-
-                var method = new HttpMethod("PATCH");
-                var request = new HttpRequestMessage(method, requestUri)
-                {
-                    Content = content
-                };
-
-                return await client.SendAsync(request, cancellationToken);
-            }
-        }
-
-        protected Task PatchAsync(
+        protected async Task PatchAsync(
             string requestUri, 
             object request, 
             CancellationToken cancellationToken = new CancellationToken())
@@ -168,7 +169,20 @@ namespace Resin.Api.Client
 
             StringContent requestContent = new StringContent(requestJson, Encoding.UTF8, ContentTypeJson);
 
-            return PatchAsync(requestUri, requestContent, cancellationToken);
+            using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
+            {
+                // https://stackoverflow.com/a/29772349/232566
+                var method = new HttpMethod("PATCH");
+
+                //Create the request message
+                var requestMessage = new HttpRequestMessage(method, requestUri)
+                {
+                    Content = requestContent
+                };
+
+                //Send it!
+                await client.SendAsync(requestMessage, cancellationToken);
+            }
         }
     }
 }

@@ -1,26 +1,57 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Resin.Api.Client.Domain;
+using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
 {
     public class ResinClient : ApiClientBase
     {
-        public ResinClient(string bearerToken, string baseAddress = "https://api.resin.io/v1") : base(bearerToken,
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tokenProvider"></param>
+        /// <param name="baseAddress"></param>
+        public ResinClient(ITokenProvider tokenProvider, string baseAddress = "https://api.resin.io/v1") : base(tokenProvider,
             baseAddress)
         {
         }
 
+        /// <summary>
+        /// Get the current user.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ResinUser> GetUserAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var users = await GetAsync<ResinUser[]>("v1/user", cancellationToken);
+            var users = await GetAsync<ODataResponse<ResinUser[]>>("v1/user", cancellationToken);
 
-            return users.FirstOrDefault();
+            var user = users.D?.FirstOrDefault();
+
+            if (user == null)
+                throw new ObjectNotFoundException("Unable to find user.");
+
+            return user;
+        }
+
+        /// <summary>
+        /// Get the current user.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ResinUser> GetUserAsync(int id, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var users = await GetAsync<ODataResponse<ResinUser[]>>($"v1/user({id})", cancellationToken);
+
+            var user = users.D?.FirstOrDefault();
+
+            if (user == null)
+                throw new ObjectNotFoundException($"Unable to find user with id {id}.");
+
+            return user;
         }
 
         /// <summary>
@@ -30,16 +61,14 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<string> WhoamiAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            using (var client = CreateHttpClient())
+            using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
                 HttpResponseMessage response = await client.GetAsync("/whoami", cancellationToken);
 
                 await ThrowOnErrorAsync(response);
 
                 //Save an updated veresion of the token
-                BearerToken = await response.Content.ReadAsStringAsync();
-
-                return BearerToken;
+                return await response.Content.ReadAsStringAsync();               
             }
         }
 
@@ -50,9 +79,11 @@ namespace Resin.Api.Client
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<ResinApplication[]> GetApplicationsAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task<ResinApplication[]> GetApplicationsAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            return GetAsync<ResinApplication[]>("v1/application", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinApplication[]>>("v1/application", cancellationToken);
+
+            return odata.D;
         }
 
         /// <summary>
@@ -63,23 +94,47 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<ApplicationEnvironmentVariable[]> GetApplicationEnvironmentVariablesAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
         {
-            return await GetAsync<ApplicationEnvironmentVariable[]>($"v1/environment_variable?$filter=application eq {applicationId}", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ApplicationEnvironmentVariable[]>>($"v1/environment_variable?$filter=application eq {applicationId}", cancellationToken);
+
+            return odata.D;
         }
 
+        /// <summary>
+        /// Get an application by id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ResinApplication> GetApplicationAsync(int id,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            ResinApplication[] applications = await GetAsync<ResinApplication[]>($"v1/application({id})", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinApplication[]>>($"v1/application({id})", cancellationToken);
 
-            return applications.FirstOrDefault();
+            var application = odata.D.FirstOrDefault();
+
+            if (application == null)
+                throw new ObjectNotFoundException($"Application with id {id} not found.");
+
+            return application;
         }
 
+        /// <summary>
+        /// Get an application by name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<ResinApplication> GetApplicationAsync(string name,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            ResinApplication[] applications = await GetAsync<ResinApplication[]>($"v1/application?$filter=app_name eq '{name}'", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinApplication[]>>($"v1/application?$filter=app_name eq '{name}'", cancellationToken);
 
-            return applications.FirstOrDefault();
+            var application = odata.D?.FirstOrDefault();
+
+            if (application == null)
+                throw new ObjectNotFoundException($"Application with name '{name}' not found.");
+
+            return application;
         }
 
         public async Task<ResinApplication> CreateApplicationAsync(
@@ -106,12 +161,9 @@ namespace Resin.Api.Client
         {
             string raw = await PostRawAsync($"api-key/application/{applicationId}/provisioning", cancellationToken);
 
-            if (!string.IsNullOrWhiteSpace(raw))
-            {
-                if (raw.StartsWith("\""))
-                {
-                    return raw.Substring(1, raw.Length - 2);
-                }
+            if (raw.Length >= 3)
+            { 
+                return raw.Substring(1, raw.Length - 2);
             }
 
             return raw;
@@ -120,7 +172,6 @@ namespace Resin.Api.Client
         #endregion
 
         #region Devices
-
      
         /// <summary>
         /// Registers a new device.
@@ -137,6 +188,7 @@ namespace Resin.Api.Client
             if (application == null)
                 throw new ApplicationException($"Application with id {applicationId} was not found.");
 
+            //Get the user
             ResinUser user = await GetUserAsync(cancellationToken);
 
             if (user == null)
@@ -153,29 +205,8 @@ namespace Resin.Api.Client
             //Get the api key
             string apiKey = await GetProvisioningKeyAsync(applicationId, cancellationToken);
 
-            using (var client = CreateHttpClient())
-            {
-                //Serialize it
-                string json = JsonConvert.SerializeObject(data);
-
-                //Create the request content
-                var content = new StringContent(json, Encoding.UTF8, ContentTypeJson);
-
-                //Make the request
-                HttpResponseMessage response = await client.PostAsync($"device/register?apikey={apiKey}", content, cancellationToken);
-
-                //Check the response
-                await ThrowOnErrorAsync(response);
-
-                //Get the response json
-                string responseJson = await response.Content.ReadAsStringAsync();
-
-                //Log it
-                await LogResponseAsync(responseJson);
-
-                //Get the result.
-                return JsonConvert.DeserializeObject<RegisterDeviceResult>(responseJson);
-            }
+            //Do it
+            return await PostAsync<RegisterDeviceResult>($"device/register?apikey={apiKey}", data, cancellationToken);
         }
 
         /// <summary>
@@ -183,24 +214,59 @@ namespace Resin.Api.Client
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<ResinDevice[]> GetDevicesAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task<ResinDevice[]> GetDevicesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            return GetAsync<ResinDevice[]>("v1/device", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinDevice[]>>("v1/device", cancellationToken);
+
+            return odata.D;
         }
 
+        /// <summary>
+        /// Gets the devices for a given application.
+        /// </summary>
+        /// <param name="applicationId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<ResinDevice[]> GetDevicesAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
         {
             throw new NotImplementedException();
         }
 
-        public Task<ResinDevice> GetDeviceAsync(int id, CancellationToken cancellationToken = new CancellationToken())
+        /// <summary>
+        /// Get a single device by id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ResinDevice> GetDeviceAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
-            return GetAsync<ResinDevice>($"v1/device({id})", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinDevice>>($"v1/device({id})", cancellationToken);
+
+            var device = odata.D;
+
+            if (device == null)
+                throw new ObjectNotFoundException($"Unable to find device with id {id}.");
+
+            return device;
         }
 
-        public Task<ResinDevice> GetDeviceAsync(string name, CancellationToken cancellationToken = new CancellationToken())
+        /// <summary>
+        /// Get a single device by name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ResinDevice> GetDeviceAsync(string name, CancellationToken cancellationToken = new CancellationToken())
         {
-            return GetAsync<ResinDevice>($"v1/device?$filter=name eq '{name}'", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinDevice[]>>($"v1/device?$filter=name eq '{name}'", cancellationToken);
+
+            var device = odata.D?.FirstOrDefault();
+
+            if (device == null)
+                throw new ObjectNotFoundException($"Unable to find device with name '{name}'.");
+
+            return device;
+
         }
 
         /// <summary>
@@ -223,11 +289,15 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<string> GetStatusAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
-            ResinDevice[] resinDevices = await GetAsync<ResinDevice[]>($"v1/device({id})?$select=status", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinDevice[]>>($"v1/device({id})?$select=status", cancellationToken);
 
-            return resinDevices.FirstOrDefault()?.Status;
+            var device = odata.D?.FirstOrDefault();
+
+            if (device == null)
+                throw new ObjectNotFoundException($"Unable to find device with id {id}.");
+
+            return device.Status;
         }
-
 
         /// <summary>
         /// Gets the 
@@ -238,7 +308,9 @@ namespace Resin.Api.Client
         public async Task<DeviceEnvironmentVariable[]> GetDeviceEnvironmentalVariablesAsync(int deviceId,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            return await GetAsync<DeviceEnvironmentVariable[]>($"v1/device_environment_variable?$filter=device eq {deviceId}", cancellationToken);
+            var odata = await GetAsync<ODataResponse<DeviceEnvironmentVariable[]>>($"v1/device_environment_variable?$filter=device eq {deviceId}", cancellationToken);
+
+            return odata.D;
         }
 
         public Task CreateDeviceEnvironmentVariableAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -298,7 +370,7 @@ namespace Resin.Api.Client
         /// <returns></returns>
         protected async Task DeviceCommandAsync(int deviceId, string command, CancellationToken cancellationToken)
         {
-            using (var client = CreateHttpClient())
+            using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
                 var response = await client.PostAsync($"device/{deviceId}/{command}", new ByteArrayContent(new byte[] { }), cancellationToken);
 
@@ -306,6 +378,13 @@ namespace Resin.Api.Client
             }
         }
 
+        /// <summary>
+        ///  Move a device to another application.
+        /// </summary>
+        /// <param name="deviceId"></param>
+        /// <param name="applicationId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task MoveDeviceAsync(int deviceId, int applicationId, CancellationToken cancellationToken = new CancellationToken())
         {
             throw new NotImplementedException();

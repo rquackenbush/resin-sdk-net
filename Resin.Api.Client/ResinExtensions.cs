@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Resin.Api.Client
 {
-    internal static class StringExtensions
+    internal static class ResinExtensions
     {
         public static string FormatJson(this string json)
         {
@@ -17,11 +17,6 @@ namespace Resin.Api.Client
                 return json;
             }
 
-        }
-
-        public static string ToJson(this object value)
-        {
-            return JsonConvert.SerializeObject(value);
         }
     }
 }

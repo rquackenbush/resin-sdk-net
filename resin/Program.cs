@@ -40,7 +40,9 @@ namespace resin
 
         private static async Task TestAsync(string token)
         {
-            var client = new ResinClient(token);
+            var tokenProvider = new SimpleTokenProvider(token);
+
+            var client = new ResinClient(tokenProvider);
 
             //var user = await client.GetUserAsync();
 
@@ -48,20 +50,20 @@ namespace resin
 
             //await client.CreateApplicationAsync("testing2", "artik10");
 
-            // ResinApplication[] applications = await client.GetApplicationsAsync();
-            //DisplayObjects(applications, a => a.AppName);
+            ResinApplication[] applications = await client.GetApplicationsAsync();
+            DisplayObjects(applications, a => a.AppName);
 
-            var stagingApplication = await client.GetApplicationAsync("ScadaStaging");
+            //var stagingApplication = await client.GetApplicationAsync("ScadaStaging");
 
             //string key = await client.GetProvisioningKeyAsync(stagingApplication.Id);
 
             //Console.WriteLine(key);
 
-            string uuid = Guid.NewGuid().ToString("N");
+            //string uuid = Guid.NewGuid().ToString("N");
 
-            var deviceId = await client.RegisterDeviceAsync(stagingApplication.Id, uuid);
+            //var deviceId = await client.RegisterDeviceAsync(stagingApplication.Id, uuid);
 
-            Console.WriteLine($"DeviceId: {deviceId}");
+            //Console.WriteLine($"DeviceId: {deviceId}");
 
 
 
@@ -69,13 +71,14 @@ namespace resin
 
             //var variables = await client.GetApplicationEnvironmentVariablesAsync(applicationId);
 
-            //var devices = await client.GetDevicesAsync();
+            var devices = await client.GetDevicesAsync();
+            DisplayObjects(devices, d => d.Name);
 
-            //int deviceId = devices[0].Id;
+            int deviceId = devices[0].Id;
 
-            //string status = await client.GetStatusAsync(deviceId);
+            string status = await client.GetStatusAsync(deviceId);
 
-            //Console.WriteLine(status);
+            Console.WriteLine(status);
 
             //await client.AddNoteAsync(deviceId, "Hello!!!!!!!!!!");
 
