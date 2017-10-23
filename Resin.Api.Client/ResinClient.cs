@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -13,6 +14,13 @@ namespace Resin.Api.Client
         public ResinClient(string bearerToken, string baseAddress = "https://api.resin.io/v1") : base(bearerToken,
             baseAddress)
         {
+        }
+
+        public async Task<ResinUser> GetUserAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            var users = await GetAsync<ResinUser[]>("v1/user", cancellationToken);
+
+            return users.FirstOrDefault();
         }
 
         /// <summary>
@@ -74,12 +82,18 @@ namespace Resin.Api.Client
             return applications.FirstOrDefault();
         }
 
-        public Task<ResinApplication> CreateApplicationAsync(
+        public async Task<ResinApplication> CreateApplicationAsync(
             string name, 
             string deviceType,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            var data = new 
+            {
+                app_name = name,
+                device_type = deviceType
+            };
+
+            return await PostAsync<ResinApplication>("v1/application", data, cancellationToken);
         }
 
         public Task<ResinApplication> DeleteApplicationAsync(int id,
@@ -88,51 +102,56 @@ namespace Resin.Api.Client
             throw new NotImplementedException();
         }
 
+        public async Task<string> GetProvisioningKeyAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
+        {
+            string raw = await PostRawAsync($"api-key/application/{applicationId}/provisioning", cancellationToken);
+
+            if (!string.IsNullOrWhiteSpace(raw))
+            {
+                if (raw.StartsWith("\""))
+                {
+                    return raw.Substring(1, raw.Length - 2);
+                }
+            }
+
+            return raw;
+        }
+
         #endregion
 
         #region Devices
 
-        //TODO: Figure out how to create a new device
-        // CLI syntax for creating a device:
-        // sudo resin device register ScadaStaging -u 3eec3e57d9264f12a3803ec1717eb7b6
-        // from CLI: resin.models.device.register(application.app_name, uuid, deviceApiKey)
-        //Changed register() to work with the new device registration flow. register() now returns device registration information ({ id: "...", uuid: "...", api_key: "..." }), but not the full device object.
-
-        //    data = {
-        //        'user': user_id,
-        //        'application': application['id'],
-        //        'device_type': application['device_type'],
-        //        'registered_at': now.total_seconds(),
-        //        'uuid': uuid
-        //}
-
-        //    if api_key:
-        //        data['apikey'] = api_key
-
-        //    return self.base_request.request(
-        //        'device', 'POST', data=data,
-        //        endpoint=self.settings.get('pine_endpoint'), login=True
-        //    )
-
-        //      return self.base_request.request(
-        //      'device', 'POST', data=data,
-        //          endpoint=self.settings.get('pine_endpoint'), login=True
-
-        //https://github.com/resin-io/resin-sdk-python/blob/master/resin/models/device.py#L494
-
-        //https://github.com/resin-io-modules/resin-register-device/blob/master/lib/register.coffee#L84
-
-        public async Task<int> RegisterDeviceAsync(int applicationId, string uuid, CancellationToken cancellationToken = new CancellationToken())
+     
+        /// <summary>
+        /// Registers a new device.
+        /// </summary>
+        /// <param name="applicationId"></param>
+        /// <param name="uuid"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<RegisterDeviceResult> RegisterDeviceAsync(int applicationId, string uuid, CancellationToken cancellationToken = new CancellationToken())
         {
             //Get the application
             ResinApplication application = await GetApplicationAsync(applicationId, cancellationToken);
 
+            if (application == null)
+                throw new ApplicationException($"Application with id {applicationId} was not found.");
+
+            ResinUser user = await GetUserAsync(cancellationToken);
+
+            if (user == null)
+                throw new ApplicationException($"User not found.");
+
             var data = new
             {
+                user = user.Id,
                 application = application.Id,
                 device_type = application.DeviceType,
                 uuid
             };
+
+            //Get the api key
+            string apiKey = await GetProvisioningKeyAsync(applicationId, cancellationToken);
 
             using (var client = CreateHttpClient())
             {
@@ -140,12 +159,10 @@ namespace Resin.Api.Client
                 string json = JsonConvert.SerializeObject(data);
 
                 //Create the request content
-                var content = new StringContent(json);
-
-                //string formatted = json.FormatJson();
+                var content = new StringContent(json, Encoding.UTF8, ContentTypeJson);
 
                 //Make the request
-                HttpResponseMessage response = await client.PostAsync("device/register", content, cancellationToken);
+                HttpResponseMessage response = await client.PostAsync($"device/register?apikey={apiKey}", content, cancellationToken);
 
                 //Check the response
                 await ThrowOnErrorAsync(response);
@@ -157,10 +174,7 @@ namespace Resin.Api.Client
                 await LogResponseAsync(responseJson);
 
                 //Get the result.
-                dynamic result = JsonConvert.DeserializeObject(responseJson);
-
-                //Let's just care about the device.
-                return result.id;
+                return JsonConvert.DeserializeObject<RegisterDeviceResult>(responseJson);
             }
         }
 

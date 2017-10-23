@@ -42,16 +42,26 @@ namespace resin
         {
             var client = new ResinClient(token);
 
-            //ResinApplication[] applications = await client.GetApplicationsAsync();
+            //var user = await client.GetUserAsync();
+
+            //Console.WriteLine(user.Id);
+
+            //await client.CreateApplicationAsync("testing2", "artik10");
+
+            // ResinApplication[] applications = await client.GetApplicationsAsync();
             //DisplayObjects(applications, a => a.AppName);
 
-            //var stagingApplication = await client.GetApplicationAsync("ScadaStaging");
+            var stagingApplication = await client.GetApplicationAsync("ScadaStaging");
 
-            //string uuid = Guid.NewGuid().ToString("N");
+            //string key = await client.GetProvisioningKeyAsync(stagingApplication.Id);
 
-            //var deviceId = await client.RegisterDeviceAsync(stagingApplication.Id, uuid);
+            //Console.WriteLine(key);
 
-            //Console.WriteLine($"DeviceId: {deviceId}");
+            string uuid = Guid.NewGuid().ToString("N");
+
+            var deviceId = await client.RegisterDeviceAsync(stagingApplication.Id, uuid);
+
+            Console.WriteLine($"DeviceId: {deviceId}");
 
 
 
@@ -59,15 +69,15 @@ namespace resin
 
             //var variables = await client.GetApplicationEnvironmentVariablesAsync(applicationId);
 
-            var devices = await client.GetDevicesAsync();
+            //var devices = await client.GetDevicesAsync();
 
-            int deviceId = devices[0].Id;
+            //int deviceId = devices[0].Id;
 
             //string status = await client.GetStatusAsync(deviceId);
 
             //Console.WriteLine(status);
 
-            await client.AddNoteAsync(deviceId, "Hello!!!!!!!!!!");
+            //await client.AddNoteAsync(deviceId, "Hello!!!!!!!!!!");
 
             //var variables = await client.GetDeviceEnvironmentalVariablesAsync(deviceId);
 

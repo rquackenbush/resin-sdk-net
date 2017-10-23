@@ -11,7 +11,7 @@ namespace Resin.Api.Client.Domain
         [JsonProperty(PropertyName = "id")]
         public int Id { get; set; }
 
-        [JsonProperty(PropertyName = "actor")]
+        [JsonProperty(PropertyName = "Actor")]
         public int Actor { get; set; }
 
         [JsonProperty(PropertyName = "uuid")]

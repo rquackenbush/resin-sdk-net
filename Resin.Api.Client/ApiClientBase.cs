@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -10,6 +11,8 @@ namespace Resin.Api.Client
     public abstract class ApiClientBase
     {
         private readonly string _baseAddress;
+
+        protected const string ContentTypeJson = "application/json";
 
         protected ApiClientBase(string bearerToken, string baseAddress)
         {
@@ -24,7 +27,7 @@ namespace Resin.Api.Client
             var client = new HttpClient();
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(ContentTypeJson));
 
             client.BaseAddress = new Uri(_baseAddress);
 
@@ -86,6 +89,53 @@ namespace Resin.Api.Client
             }
         }
 
+        protected async Task<TResponse> PostAsync<TResponse>(string requestUri, object request,
+            CancellationToken cancellationToken)
+            where TResponse : class
+        {
+            using (var client = CreateHttpClient())
+            {
+                string requestJson = JsonConvert.SerializeObject(request);
+
+                StringContent requestContent = new StringContent(requestJson, Encoding.UTF8, ContentTypeJson);
+
+                //Perform the get
+                HttpResponseMessage response = await client.PostAsync(requestUri, requestContent, cancellationToken);
+
+                //Check for error
+                await ThrowOnErrorAsync(response);
+
+                //get the response
+                string json = await response.Content.ReadAsStringAsync();
+
+                //Log the response
+                await LogResponseAsync(json);
+
+                //Deserialize the response
+                ODataResponse<TResponse> resinResponse = JsonConvert.DeserializeObject<ODataResponse<TResponse>>(json);
+
+                //And return the deserialized object(s)
+                return resinResponse?.D;
+            }
+        }
+
+        protected async Task<string> PostRawAsync(string requestUri, CancellationToken cancellationToken)
+        {
+            using (var client = CreateHttpClient())
+            {
+                StringContent requestContent = new StringContent("");
+
+                //Perform the get
+                HttpResponseMessage response = await client.PostAsync(requestUri, requestContent, cancellationToken);
+
+                //Check for error
+                await ThrowOnErrorAsync(response);
+
+                //get the response
+                return await response.Content.ReadAsStringAsync();
+            }
+        }
+
         /// <summary>
         /// PATCH
         /// </summary>
@@ -114,9 +164,9 @@ namespace Resin.Api.Client
             object request, 
             CancellationToken cancellationToken = new CancellationToken())
         {
-            string json = JsonConvert.SerializeObject(request);
+            string requestJson = JsonConvert.SerializeObject(request);
 
-            StringContent requestContent = new StringContent(json);
+            StringContent requestContent = new StringContent(requestJson, Encoding.UTF8, ContentTypeJson);
 
             return PatchAsync(requestUri, requestContent, cancellationToken);
         }
