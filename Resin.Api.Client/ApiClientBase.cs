@@ -31,7 +31,7 @@ namespace Resin.Api.Client
             return client;
         }
 
-        protected virtual Task LogResponse(string response)
+        protected virtual Task LogResponseAsync(string response)
         {
             Console.WriteLine(response.FormatJson());
 
@@ -76,7 +76,7 @@ namespace Resin.Api.Client
                 string json = await response.Content.ReadAsStringAsync();
 
                 //Log the response
-                await LogResponse(json);
+                await LogResponseAsync(json);
 
                 //Deserialize the response
                 ODataResponse<TResponse> resinResponse = JsonConvert.DeserializeObject<ODataResponse<TResponse>>(json);
@@ -84,6 +84,41 @@ namespace Resin.Api.Client
                 //And return the deserialized object(s)
                 return resinResponse?.D;
             }
+        }
+
+        /// <summary>
+        /// PATCH
+        /// </summary>
+        /// <param name="requestUri"></param>
+        /// <param name="content"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected async Task<HttpResponseMessage> PatchAsync(string requestUri, HttpContent content, CancellationToken cancellationToken = new CancellationToken())
+        {
+            using (var client = CreateHttpClient())
+            {
+                // https://stackoverflow.com/a/29772349/232566
+
+                var method = new HttpMethod("PATCH");
+                var request = new HttpRequestMessage(method, requestUri)
+                {
+                    Content = content
+                };
+
+                return await client.SendAsync(request, cancellationToken);
+            }
+        }
+
+        protected Task PatchAsync(
+            string requestUri, 
+            object request, 
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            string json = JsonConvert.SerializeObject(request);
+
+            StringContent requestContent = new StringContent(json);
+
+            return PatchAsync(requestUri, requestContent, cancellationToken);
         }
     }
 }

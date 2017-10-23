@@ -42,23 +42,39 @@ namespace resin
         {
             var client = new ResinClient(token);
 
-            ResinApplication[] applications = await client.GetApplicationsAsync();
+            //ResinApplication[] applications = await client.GetApplicationsAsync();
             //DisplayObjects(applications, a => a.AppName);
 
-            int applicationId = applications[0].Id;
+            //var stagingApplication = await client.GetApplicationAsync("ScadaStaging");
 
-            var variables = await client.GetApplicationEnvironmentVariablesAsync(applicationId);
+            //string uuid = Guid.NewGuid().ToString("N");
 
-            //var devices = await client.GetDevicesAsync();
+            //var deviceId = await client.RegisterDeviceAsync(stagingApplication.Id, uuid);
 
-            //int deviceId = devices[0].Id;
+            //Console.WriteLine($"DeviceId: {deviceId}");
+
+
+
+            //int applicationId = applications[0].Id;
+
+            //var variables = await client.GetApplicationEnvironmentVariablesAsync(applicationId);
+
+            var devices = await client.GetDevicesAsync();
+
+            int deviceId = devices[0].Id;
+
+            //string status = await client.GetStatusAsync(deviceId);
+
+            //Console.WriteLine(status);
+
+            await client.AddNoteAsync(deviceId, "Hello!!!!!!!!!!");
 
             //var variables = await client.GetDeviceEnvironmentalVariablesAsync(deviceId);
 
-            foreach (var variable in variables)
-            {
-                Console.WriteLine($" {variable.Name}: {variable.Value}");
-            }
+            //foreach (var variable in variables)
+            //{
+            //   Console.WriteLine($" {variable.Name}: {variable.Value}");
+            //}
 
             //var devices = await client.GetDevicesAsync();
             //DisplayObjects(devices, d => d.Name);
