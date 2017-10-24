@@ -8,14 +8,14 @@ using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
 {
-    public class ResinClient : ApiClientBase
+    public class ResinApiClient : ApiClientBase
     {
         /// <summary>
-        /// 
+        /// resin.io Data API Service client. https://docs.resin.io/runtime/data-api/
         /// </summary>
         /// <param name="tokenProvider"></param>
         /// <param name="baseAddress"></param>
-        public ResinClient(ITokenProvider tokenProvider, string baseAddress = "https://api.resin.io/v1") : base(tokenProvider,
+        public ResinApiClient(ITokenProvider tokenProvider, string baseAddress = "https://api.resin.io/v1/") : base(tokenProvider,
             baseAddress)
         {
         }
@@ -27,7 +27,7 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<ResinUser> GetUserAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var users = await GetAsync<ODataResponse<ResinUser[]>>("v1/user", cancellationToken);
+            var users = await GetAsync<ODataResponse<ResinUser[]>>("user", cancellationToken);
 
             var user = users.D?.FirstOrDefault();
 
@@ -40,11 +40,12 @@ namespace Resin.Api.Client
         /// <summary>
         /// Get the current user.
         /// </summary>
+        /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<ResinUser> GetUserAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
-            var users = await GetAsync<ODataResponse<ResinUser[]>>($"v1/user({id})", cancellationToken);
+            var users = await GetAsync<ODataResponse<ResinUser[]>>($"user({id})", cancellationToken);
 
             var user = users.D?.FirstOrDefault();
 
@@ -81,7 +82,7 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<ResinApplication[]> GetApplicationsAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var odata = await GetAsync<ODataResponse<ResinApplication[]>>("v1/application", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinApplication[]>>("application", cancellationToken);
 
             return odata.D;
         }
@@ -89,12 +90,12 @@ namespace Resin.Api.Client
         /// <summary>
         /// Get the environment variables for a given environment
         /// </summary>
-        /// <param name="applicationId"></param>
+        /// <param name="applicationId">Application id.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<ApplicationEnvironmentVariable[]> GetApplicationEnvironmentVariablesAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
         {
-            var odata = await GetAsync<ODataResponse<ApplicationEnvironmentVariable[]>>($"v1/environment_variable?$filter=application eq {applicationId}", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ApplicationEnvironmentVariable[]>>($"environment_variable?$filter=application eq {applicationId}", cancellationToken);
 
             return odata.D;
         }
@@ -108,7 +109,7 @@ namespace Resin.Api.Client
         public async Task<ResinApplication> GetApplicationAsync(int id,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var odata = await GetAsync<ODataResponse<ResinApplication[]>>($"v1/application({id})", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinApplication[]>>($"application({id})", cancellationToken);
 
             var application = odata.D.FirstOrDefault();
 
@@ -127,7 +128,7 @@ namespace Resin.Api.Client
         public async Task<ResinApplication> GetApplicationAsync(string name,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var odata = await GetAsync<ODataResponse<ResinApplication[]>>($"v1/application?$filter=app_name eq '{name}'", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinApplication[]>>($"application?$filter=app_name eq '{name}'", cancellationToken);
 
             var application = odata.D?.FirstOrDefault();
 
@@ -148,7 +149,7 @@ namespace Resin.Api.Client
                 device_type = deviceType
             };
 
-            return await PostAsync<ResinApplication>("v1/application", data, cancellationToken);
+            return await PostAsync<ResinApplication>("application", data, cancellationToken);
         }
 
         public Task<ResinApplication> DeleteApplicationAsync(int id,
@@ -159,7 +160,7 @@ namespace Resin.Api.Client
 
         public async Task<string> GetProvisioningKeyAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
         {
-            string raw = await PostRawAsync($"api-key/application/{applicationId}/provisioning", cancellationToken);
+            string raw = await PostRawAsync($"/api-key/application/{applicationId}/provisioning", cancellationToken);
 
             if (raw.Length >= 3)
             { 
@@ -216,7 +217,7 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<ResinDevice[]> GetDevicesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var odata = await GetAsync<ODataResponse<ResinDevice[]>>("v1/device", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinDevice[]>>("device", cancellationToken);
 
             return odata.D;
         }
@@ -258,7 +259,7 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<ResinDevice> GetDeviceAsync(string name, CancellationToken cancellationToken = new CancellationToken())
         {
-            var odata = await GetAsync<ODataResponse<ResinDevice[]>>($"v1/device?$filter=name eq '{name}'", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinDevice[]>>($"device?$filter=name eq '{name}'", cancellationToken);
 
             var device = odata.D?.FirstOrDefault();
 
@@ -278,7 +279,7 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public Task AddNoteAsync(int id, string note, CancellationToken cancellationToken = new CancellationToken())
         {
-            return PatchAsync($"v1/device({id})", new {note}, cancellationToken);
+            return PatchAsync($"device({id})", new {note}, cancellationToken);
         }
 
         /// <summary>
@@ -289,7 +290,7 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<string> GetStatusAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
-            var odata = await GetAsync<ODataResponse<ResinDevice[]>>($"v1/device({id})?$select=status", cancellationToken);
+            var odata = await GetAsync<ODataResponse<ResinDevice[]>>($"device({id})?$select=status", cancellationToken);
 
             var device = odata.D?.FirstOrDefault();
 
@@ -308,7 +309,7 @@ namespace Resin.Api.Client
         public async Task<DeviceEnvironmentVariable[]> GetDeviceEnvironmentalVariablesAsync(int deviceId,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var odata = await GetAsync<ODataResponse<DeviceEnvironmentVariable[]>>($"v1/device_environment_variable?$filter=device eq {deviceId}", cancellationToken);
+            var odata = await GetAsync<ODataResponse<DeviceEnvironmentVariable[]>>($"device_environment_variable?$filter=device eq {deviceId}", cancellationToken);
 
             return odata.D;
         }

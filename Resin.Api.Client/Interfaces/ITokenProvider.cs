@@ -13,6 +13,6 @@ namespace Resin.Api.Client.Interfaces
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-       Task<string> GetTokenAsync(CancellationToken cancellationToken);
+        Task<string> GetTokenAsync(CancellationToken cancellationToken);
     }
 }
