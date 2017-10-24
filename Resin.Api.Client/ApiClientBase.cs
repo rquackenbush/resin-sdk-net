@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
@@ -75,7 +76,7 @@ namespace Resin.Api.Client
         /// <param name="requestUri"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<TResponse> GetAsync<TResponse>(string requestUri, CancellationToken cancellationToken)
+        protected internal async Task<JToken> GetAsync(string requestUri, CancellationToken cancellationToken)
         {
             using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
@@ -92,20 +93,18 @@ namespace Resin.Api.Client
                 await LogResponseAsync(json);
 
                 //Deserialize the response
-                return JsonConvert.DeserializeObject<TResponse>(json);
+                return JToken.Parse(json);
             }
         }
 
         /// <summary>
         /// Post a json request and return the deserialized result.
         /// </summary>
-        /// <typeparam name="TResponse"></typeparam>
         /// <param name="requestUri"></param>
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<TResponse> PostAsync<TResponse>(string requestUri, object request,
-            CancellationToken cancellationToken)
+        protected internal async Task<JToken> PostAsync(string requestUri, object request, CancellationToken cancellationToken)
         {
             using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
@@ -125,8 +124,7 @@ namespace Resin.Api.Client
                 //Log the response
                 await LogResponseAsync(json);
 
-                //Deserialize the response
-                return JsonConvert.DeserializeObject<TResponse>(json);
+                return JToken.Parse(json);
             }
         }
 
@@ -136,7 +134,7 @@ namespace Resin.Api.Client
         /// <param name="requestUri"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<string> PostRawAsync(string requestUri, CancellationToken cancellationToken)
+        protected internal async Task<string> PostRawAsync(string requestUri, CancellationToken cancellationToken)
         {
             using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
@@ -160,7 +158,7 @@ namespace Resin.Api.Client
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task PatchAsync(
+        protected internal async Task PatchAsync(
             string requestUri, 
             object request, 
             CancellationToken cancellationToken = new CancellationToken())

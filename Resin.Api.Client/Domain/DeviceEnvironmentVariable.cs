@@ -1,16 +1,11 @@
-﻿using Newtonsoft.Json;
-
-namespace Resin.Api.Client.Domain
+﻿namespace Resin.Api.Client.Domain
 {
-    public class DeviceEnvironmentVariable
+    public class DeviceEnvironmentVariable : ODataObject
     {
-        [JsonProperty(PropertyName = "id")]
-        public int Id { get; set; }
+        public int Id => GetValue<int>("id");
 
-        [JsonProperty(PropertyName = "env_var_name")]
-        public string EnvironmentVariableName { get; set; }
+        public string EnvironmentVariableName => GetValue<string>("env_var_name");
 
-        [JsonProperty(PropertyName = "value")]
-        public string Value { get; set; }
+        public string Value => GetValue<string>("value");
     }
 }

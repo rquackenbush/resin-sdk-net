@@ -42,7 +42,7 @@ namespace resin
         {
             var tokenProvider = new SimpleTokenProvider(token);
 
-            var client = new ResinClient(tokenProvider);
+            var client = new ResinApiClient(tokenProvider);
 
             //var user = await client.GetUserAsync();
 
@@ -51,7 +51,7 @@ namespace resin
             //await client.CreateApplicationAsync("testing2", "artik10");
 
             ResinApplication[] applications = await client.GetApplicationsAsync();
-            DisplayObjects(applications, a => a.AppName);
+            //DisplayObjects(applications, a => a.AppName);
 
             //var stagingApplication = await client.GetApplicationAsync("ScadaStaging");
 
@@ -72,13 +72,44 @@ namespace resin
             //var variables = await client.GetApplicationEnvironmentVariablesAsync(applicationId);
 
             var devices = await client.GetDevicesAsync();
-            DisplayObjects(devices, d => d.Name);
 
-            int deviceId = devices[0].Id;
+            foreach (var device in devices)
+            {
+                Console.WriteLine(device.Name);
 
-            string status = await client.GetStatusAsync(deviceId);
+                var application = await device.Application.GetAsync();
 
-            Console.WriteLine(status);
+                Console.WriteLine($"Device {device.Id}: {application.AppName}");
+
+                var user = await device.User.GetAsync();
+
+                Console.WriteLine($"  user: [{user.Id}] {user.Username}");
+
+
+                var user2 = await client.GetUserAsync(user.Id);
+
+                Console.WriteLine($" user2: {user2.Username}");
+
+                var application2 = await client.GetApplicationAsync(application.Id);
+
+                Console.WriteLine($" application2: {application2.AppName}");
+
+                //var childDevices = await application.Devices.GetAsync();
+
+                //foreach (var childDevice in childDevices)
+                //{
+                //    Console.WriteLine($"     {childDevice.Name}");
+                //}
+
+            }
+
+            //DisplayObjects(devices, d => d.Id.ToString());
+
+            //int deviceId = devices[0].Id;
+
+            //string status = await client.GetStatusAsync(deviceId);
+
+            //Console.WriteLine(status);
 
             //await client.AddNoteAsync(deviceId, "Hello!!!!!!!!!!");
 
@@ -95,28 +126,28 @@ namespace resin
             //await client.RestartDeviceAsync(666, 666);
         }
 
-        private static void DisplayObjects<TObject>(TObject[] items, Func<TObject, string> nameFunc)
-        {
-            var propertyInfos = typeof(TObject).GetProperties();
+        //private static void DisplayObjects<TObject>(TObject[] items, Func<TObject, string> nameFunc)
+        //{
+        //    var propertyInfos = typeof(TObject).GetProperties();
 
-            foreach (var item in items)
-            {
-                string name = nameFunc(item);
+        //    foreach (var item in items)
+        //    {
+        //        string name = nameFunc(item);
 
-                Console.WriteLine(name);
-                Console.WriteLine("--------------------------------------");
+        //        Console.WriteLine(name);
+        //        Console.WriteLine("--------------------------------------");
 
-                foreach (var propertyInfo in propertyInfos)
-                {
-                    string propertyName = propertyInfo.Name;
+        //        foreach (var propertyInfo in propertyInfos)
+        //        {
+        //            string propertyName = propertyInfo.Name;
 
-                    object propertyValue = propertyInfo.GetValue(item);
+        //            object propertyValue = propertyInfo.GetValue(item);
 
-                    Console.WriteLine($"  {propertyName}: {propertyValue}");
-                }
+        //            Console.WriteLine($"  {propertyName}: {propertyValue}");
+        //        }
 
-                Console.WriteLine();
-            }
-        }
+        //        Console.WriteLine();
+        //    }
+        //}
     }
 }

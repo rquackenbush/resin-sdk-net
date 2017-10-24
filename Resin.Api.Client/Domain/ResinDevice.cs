@@ -1,126 +1,112 @@
 ﻿using System;
-using Newtonsoft.Json;
+using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client.Domain
 {
-    public class ResinDevice
+    public class ResinDevice : ODataObject
     {
-        [JsonProperty(PropertyName = "created_at")]
-        public DateTime CreatedAt { get; set; }
+        private DeferrableProperty<ResinApplication> _application;
+        private DeferrableProperty<ResinUser> _user;
+        private DeferrableProperty<ServiceInstance> _serviceInstance;
 
-        [JsonProperty(PropertyName = "id")]
-        public int Id { get; set; }
+        protected override void Initialize()
+        {
+            _application = new DeferrableProperty<ResinApplication>(Client, Token["application"]);
+            _user = new DeferrableProperty<ResinUser>(Client, Token["user"]);
+            _serviceInstance = new DeferrableProperty<ServiceInstance>(Client, Token["service_instance"]);
+        }
 
-        [JsonProperty(PropertyName = "Actor")]
-        public int Actor { get; set; }
+        public DateTime CreatedAt => GetValue<DateTime>("created_at");
 
-        [JsonProperty(PropertyName = "uuid")]
-        public string Uuid { get; set; }
+        public int Id => GetValue<int>("id");
 
-        [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
+        public int Actor => GetValue<int>("actor");
 
-        [JsonProperty(PropertyName = "device_type")]
-        public string DeviceType { get; set; }
+        public string Uuid => GetValue<string>("uuid");
 
-        [JsonProperty(PropertyName = "is_online")]
-        public bool IsOnline { get; set; }
+        public string LocalId => GetValue<string>("local_id");
 
-        [JsonProperty(PropertyName = "latitude")]
-        public double? Latitude { get; set; }
+        public string Name => GetValue<string>("name");
 
-        [JsonProperty(PropertyName = "longitude")]
-        public double? Longitude { get; set; }
+        public string Note => GetValue<string>("note");
 
-        [JsonProperty(PropertyName = "custom_latitude")]
-        public double? CustomLatitude { get; set; }
+        public string DeviceType => GetValue<string>("device_type");
 
-        [JsonProperty(PropertyName = "custom_longitude")]
-        public double? CustomLongitude { get; set; }
+        public bool IsOnline => GetValue<bool>("is_online");
 
-        [JsonProperty(PropertyName = "location")]
-        public string Location { get; set; }
+        public double? Latitude => GetValue<double?>("latitude");
 
-        [JsonProperty(PropertyName = "logs_channel")]
-        public string LogsChannel { get; set; }
+        public double? Longitude => GetValue<double?>("longitude");
 
-        [JsonProperty(PropertyName = "public_address")]
-        public string PublicAddress { get; set; }
+        public double? CustomLatitude => GetValue<double?>("custom_latitude");
 
-        [JsonProperty(PropertyName = "vpn_address")]
-        public string VpnAddress { get; set; }
+        public double? CustomLongitude => GetValue<double?>("custom_longitude");
 
-        [JsonProperty(PropertyName = "ip_address")]
-        public string IpAddress { get; set; }
+        public string Location => GetValue<string>("location");
 
-        [JsonProperty(PropertyName = "status")]
-        public string Status { get; set; }
+        public string LogsChannel => GetValue<string>("logs_channel");
 
-        [JsonProperty(PropertyName = "os_version")]
-        public string OsVersion { get; set; }
+        public string PublicAddress => GetValue<string>("public_address");
 
-        [JsonProperty(PropertyName = "os_variant")]
-        public string OsVariant { get; set; }
+        public string VpnAddress => GetValue<string>("vpn_address");
 
-        [JsonProperty(PropertyName = "supervisor_version")]
-        public string SupervisorVersion { get; set; }
+        public string IpAddress => GetValue<string>("ip_address");
 
-        [JsonProperty(PropertyName = "provisioning_progress")]
-        public object ProvisioningProgress { get; set; }
+        public string Status => GetValue<string>("status");
 
-        [JsonProperty(PropertyName = "provisioning_state")]
-        public string ProvisioningState { get; set; }
+        public string OsVersion => GetValue<string>("os_version");
 
-        [JsonProperty(PropertyName = "download_progress")]
-        public object DownloadProgress { get; set; }
+        public string OsVariant => GetValue<string>("os_variant");
 
-        [JsonProperty(PropertyName = "is_web_accessible")]
-        public bool IsWebAcccessible { get; set; }
+        public string SupervisorVersion => GetValue<string>("supervisor_version");
 
-        /*
- 
-          "application": {
-        "__deferred": {
-          "uri": "/resin/application(569478)"
-        },
-        "__id": 569478
-      },
-      "user": {
-        "__deferred": {
-          "uri": "/resin/user(21071)"
-        },
-        "__id": 21071
-      },
-         */
+        public object ProvisioningProgress => GetValue<object>("provisioning_progress");
 
-        [JsonProperty(PropertyName = "lock_expiry_date")]
-        public DateTime? LockExpiryDate { get; set; }
+        public string ProvisioningState => GetValue<string>("provisioning_state");
 
-        [JsonProperty(PropertyName = "commit")]
-        public string Commit { get; set; }
+        public object DownloadProgress => GetValue<object>("download_progress");
 
-        [JsonProperty(PropertyName = "support_expiry_date")]
-        public DateTime? SupportExpiryDate { get; set; }
+        public bool IsWebAcccessible => GetValue<bool>("is_web_accessible");
 
-        [JsonProperty(PropertyName = "supervisor_release")]
-        public object SupervisorRelease { get; set; }
+        public IDeferrableProperty<ResinApplication> Application
+        {
+            get
+            {
+                CheckInitialized();
+                return _application;
+            }
+        }
 
-        /*
-        "service_instance": {
-        "__deferred": {
-          "uri": "/resin/service_instance(15)"
-        },
-        "__id": 15
-        },
-        */
-        
-        [JsonProperty(PropertyName = "build")]
-        public object Build { get; set; }
-        
-        [JsonProperty(PropertyName = "device")]
-        public object Device { get; set; }
-        
-        [JsonProperty(PropertyName = "last_seen_time")]
-        public DateTime? LastSeenTime { get; set; }
+        public IDeferrableProperty<ResinUser> User
+        {
+            get
+            {
+                CheckInitialized();
+                return _user;
+            }
+        }
+
+        public IDeferrableProperty<ServiceInstance> ServiceInstance
+        {
+            get
+            {
+                CheckInitialized();
+                return _serviceInstance;
+            }
+        }
+
+        public DateTime? LockExpiryDate => GetValue<DateTime?>("lock_expiry_date");
+
+        public string Commit => GetValue<string>("commit");
+
+        public DateTime? SupportExpiryDate => GetValue<DateTime?>("support_expiry_date");
+
+        public object SupervisorRelease => GetValue<object>("supervisor_release");
+
+        public object Build => GetValue<object>("build");
+
+        public object Device => GetValue<object>("device");
+
+        public DateTime? LastSeenTime => GetValue<DateTime?>("last_seen_time");
     }
 }

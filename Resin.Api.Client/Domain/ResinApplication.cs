@@ -1,39 +1,44 @@
 ﻿using System;
-using Newtonsoft.Json;
+using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client.Domain
 {
-    public class ResinApplication
+    public class ResinApplication : ODataObject
     {
-        [JsonProperty(PropertyName = "app_name")]
-        public string AppName { get; set; }
+        private DeferrableProperty<ResinUser> _user;
 
-        [JsonProperty(PropertyName = "id")]
-        public int Id { get; set; }
+        protected override void Initialize()
+        {
+            _user = new DeferrableProperty<ResinUser>(Client, Token["user"]);
+        }
 
-        [JsonProperty(PropertyName = "Actor")]
-        public int Actor { get; set; }
+        public string AppName => GetValue<string>("app_name");
 
-        [JsonProperty(PropertyName = "device_type")]
-        public string DeviceType { get; set; }
+        public int Id => GetValue<int>("id");
 
-        [JsonProperty(PropertyName = "git_repository")]
-        public string GitRepository { get; set; }
+        public int Actor => GetValue<int>("actor");
 
-        [JsonProperty(PropertyName = "commit")]
-        public string Commit { get; set; }
+        public string DeviceType => GetValue<string>("device_type");
 
-        [JsonProperty(PropertyName = "version")]
-        public int Version { get; set; }
+        public string GitRepository => GetValue<string>("git_repository");
 
-        [JsonProperty(PropertyName = "should_track_latest_release")]
-        public bool ShouldTrackLatestRelease { get; set; }
+        public string Commit => GetValue<string>("commit");
 
-        [JsonProperty(PropertyName = "support_expiry_date")]
-        public DateTime? SupportExpiryDate { get; set; }
-        
-        [JsonProperty(PropertyName = "application")]
-        public object Application { get; set; }
-        
+        public int Version => GetValue<int>("version");
+
+        public bool ShouldTrackLatestRelease => GetValue<bool>("should_track_latest_release");
+
+        public DateTime? SupportExpiryDate => GetValue<DateTime?>("support_expiry_date");
+
+        public object Application => GetValue<object>("application");
+
+        public IDeferrableProperty<ResinUser> User
+        {
+            get
+            {
+                CheckInitialized();
+                return _user;
+            }
+        }
     }
 }

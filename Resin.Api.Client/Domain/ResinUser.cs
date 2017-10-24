@@ -1,16 +1,14 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Resin.Api.Client.Domain
 {
-    public class ResinUser
+    public class ResinUser : ODataObject
     {
-        [JsonProperty(PropertyName = "id")]
-        public int Id { get; set; }
+        public int Id => GetValue<int>("id");
 
-        [JsonProperty(PropertyName = "actor")]
-        public int Actor { get; set; }
+        public int Actor => GetValue<int>("actor");
 
-        [JsonProperty(PropertyName = "username")]
-        public string Username { get; set; }
+        public string Username => GetValue<string>("username");
     }
 }

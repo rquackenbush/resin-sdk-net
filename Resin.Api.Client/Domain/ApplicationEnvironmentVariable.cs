@@ -1,16 +1,12 @@
 ﻿using Newtonsoft.Json;
-
 namespace Resin.Api.Client.Domain
 {
-    public class ApplicationEnvironmentVariable
+    public class ApplicationEnvironmentVariable : ODataObject
     {
-        [JsonProperty(PropertyName = "id")]
-        public int Id { get; set; }
+        public int Id => GetValue<int>("id");
 
-        [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
+        public string Name => GetValue<string>("name");
 
-        [JsonProperty(PropertyName = "value")]
-        public string Value { get; set; }
+        public string Value => GetValue<string>("value");
     }
 }

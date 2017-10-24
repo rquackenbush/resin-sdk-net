@@ -2,15 +2,12 @@
 
 namespace Resin.Api.Client.Domain
 {
-    public class RegisterDeviceResult
+    public class RegisterDeviceResult : ODataObject
     {
-        [JsonProperty(PropertyName = "id")]
-        public int Id { get; set; }
+        public int Id => GetValue<int>("id");
 
-        [JsonProperty(PropertyName = "uuid")]
-        public string Uuid { get; set; }
+        public string Uuid => GetValue<string>("uuid");
 
-        [JsonProperty(PropertyName = "api_key")]
-        public string ApiKey { get; set; }
+        public string ApiKey => GetValue<string>("api_key");
     }
 }
