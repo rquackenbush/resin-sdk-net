@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
+using Resin.Api.Client.Exceptions;
 using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
@@ -22,7 +23,7 @@ namespace Resin.Api.Client
         protected void CheckInitialized()
         {
             if (_client == null)
-                throw new InvalidOperationException("Initialize has not been called yet.");
+                throw new NotInitializedException("Initialize has not been called yet.");
         }
 
         public void Initialize(ApiClientBase client, JToken token)

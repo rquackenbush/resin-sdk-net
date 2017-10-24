@@ -1,12 +1,7 @@
-﻿using Newtonsoft.Json;
-namespace Resin.Api.Client.Domain
+﻿namespace Resin.Api.Client.Domain
 {
-    public class ApplicationEnvironmentVariable : ODataObject
+    internal class ApplicationEnvironmentVariable : EnvironmentVariable
     {
-        public int Id => GetValue<int>("id");
-
-        public string Name => GetValue<string>("name");
-
-        public string Value => GetValue<string>("value");
+        public override string Name => GetValue<string>("name");
     }
 }

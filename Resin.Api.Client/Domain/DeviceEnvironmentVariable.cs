@@ -1,11 +1,9 @@
-﻿namespace Resin.Api.Client.Domain
+﻿using Resin.Api.Client.Interfaces;
+
+namespace Resin.Api.Client.Domain
 {
-    public class DeviceEnvironmentVariable : ODataObject
+    internal class DeviceEnvironmentVariable : EnvironmentVariable
     {
-        public int Id => GetValue<int>("id");
-
-        public string EnvironmentVariableName => GetValue<string>("env_var_name");
-
-        public string Value => GetValue<string>("value");
+        public override string Name => GetValue<string>("env_var_name");
     }
 }

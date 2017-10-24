@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-namespace Resin.Api.Client.Domain
+﻿namespace Resin.Api.Client.Domain
 {
     public class ResinUser : ODataObject
     {

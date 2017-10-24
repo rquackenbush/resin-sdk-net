@@ -1,0 +1,69 @@
+﻿<Window x:Class="ResinExplorer.View.LogonDialogView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ResinExplorer.View"
+        xmlns:viewModel="clr-namespace:ResinExplorer.ViewModel"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:behaviors="clr-namespace:Cas.Common.WPF.Behaviors;assembly=Cas.Common.WPF"
+        SizeToContent="Height"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance viewModel:LogonDialogViewModel, d:IsDesignTimeCreatable=true}"
+        Title="Logon" Width="400" Icon="/ResinExplorer;component/images/LoginScreen_16x.png">
+
+    <i:Interaction.Behaviors>
+        <behaviors:CloseableBehavior/>
+    </i:Interaction.Behaviors>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid.Resources>
+                <Style x:Key="BaseStyle" TargetType="FrameworkElement">
+                    <Setter Property="Margin" Value="4"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource BaseStyle}"/>
+                <Style TargetType="TextBox" BasedOn="{StaticResource BaseStyle}"/>
+                <Style TargetType="ComboBox" BasedOn="{StaticResource BaseStyle}"/>
+
+            </Grid.Resources>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Top">Token</TextBlock>
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Path=Token, UpdateSourceTrigger=PropertyChanged}" Height="100" TextWrapping="Wrap"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0">Address</TextBlock>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=ApiAddress, UpdateSourceTrigger=PropertyChanged}"/>
+
+        </Grid>
+
+        <StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="4"/>
+                    <Setter Property="MinWidth" Value="60"></Setter>
+                </Style>
+            </StackPanel.Resources>
+
+            <Button Command="{Binding Path=OkCommand}" IsDefault="True">_OK</Button>
+            <Button IsCancel="True">_Cancel</Button>
+        </StackPanel>
+    </Grid>
+</Window>

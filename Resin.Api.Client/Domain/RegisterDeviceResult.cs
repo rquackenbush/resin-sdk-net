@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace Resin.Api.Client.Domain
+﻿namespace Resin.Api.Client.Domain
 {
     public class RegisterDeviceResult : ODataObject
     {

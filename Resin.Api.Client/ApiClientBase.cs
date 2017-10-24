@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Resin.Api.Client.Exceptions;
 using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
@@ -40,8 +41,6 @@ namespace Resin.Api.Client
 
         protected virtual Task LogResponseAsync(string response)
         {
-            Console.WriteLine(response.FormatJson());
-
             return Task.CompletedTask;
         }
 
@@ -65,7 +64,15 @@ namespace Resin.Api.Client
                 {   
                 }
 
-                throw new ApiClientException($"{response.StatusCode}: {response.ReasonPhrase} {content}");
+                throw new ResinApiClientException($"{response.StatusCode}: {response.ReasonPhrase} {content}");
+            }
+        }
+
+        protected async Task DeleteAsync(string requestUri, CancellationToken cancellationToken)
+        {
+            using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
+            {
+                await client.DeleteAsync(requestUri, cancellationToken);
             }
         }
 

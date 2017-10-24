@@ -5,22 +5,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Resin.Api.Client.Domain;
+using Resin.Api.Client.Exceptions;
 using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
 {
     public class ResinApiClient : ApiClientBase
     {
+        public const string DefaultApiAddress = "https://api.resin.io/v1/";
+
         /// <summary>
         /// resin.io Data API Service client. https://docs.resin.io/runtime/data-api/
         /// </summary>
         /// <param name="tokenProvider"></param>
         /// <param name="baseAddress"></param>
-        public ResinApiClient(ITokenProvider tokenProvider, string baseAddress = "https://api.resin.io/v1/") 
+        public ResinApiClient(ITokenProvider tokenProvider, string baseAddress = DefaultApiAddress) 
             : base(tokenProvider,
             baseAddress)
         {
         }
+
+        #region User
 
         /// <summary>
         /// Get the current user.
@@ -42,7 +47,7 @@ namespace Resin.Api.Client
         }
 
         /// <summary>
-        /// Get the current user.
+        /// Get a particular user by id.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
@@ -79,10 +84,13 @@ namespace Resin.Api.Client
             }
         }
 
+        #endregion
+
         #region Applications
 
         /// <summary>
         /// Gets all applications.
+        /// https://docs.resin.io/runtime/data-api/#get-all-applications
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -95,19 +103,23 @@ namespace Resin.Api.Client
 
         /// <summary>
         /// Get the environment variables for a given environment
+        /// https://docs.resin.io/runtime/data-api/#get-all-application-variables
         /// </summary>
         /// <param name="applicationId">Application id.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ApplicationEnvironmentVariable[]> GetApplicationEnvironmentVariablesAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<EnvironmentVariable[]> GetApplicationEnvironmentVariablesAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
         {
             JToken token = await GetAsync($"environment_variable?$filter=application eq {applicationId}", cancellationToken);
 
-            return token.ToDataObjectArray<ApplicationEnvironmentVariable>(this);
+            return token.ToDataObjectArray<ApplicationEnvironmentVariable>(this)
+                .Cast<EnvironmentVariable>()
+                .ToArray();
         }
 
         /// <summary>
         /// Get an application by id.
+        /// https://docs.resin.io/runtime/data-api/#get-application
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
@@ -129,6 +141,7 @@ namespace Resin.Api.Client
 
         /// <summary>
         /// Get an application by name.
+        /// 
         /// </summary>
         /// <param name="name"></param>
         /// <param name="cancellationToken"></param>
@@ -162,10 +175,16 @@ namespace Resin.Api.Client
             return token.ToDataObjectDirect<ResinApplication>(this);
         }
 
-        public Task<ResinApplication> DeleteApplicationAsync(int id,
+        /// <summary>
+        /// https://docs.resin.io/runtime/data-api/#delete-application
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task DeleteApplicationAsync(int id,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            return DeleteAsync($"application({id})", cancellationToken);
         }
 
         public async Task<string> GetProvisioningKeyAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
@@ -197,14 +216,12 @@ namespace Resin.Api.Client
             ResinApplication application = await GetApplicationAsync(applicationId, cancellationToken);
 
             if (application == null)
-                throw new ApplicationException($"Application with id {applicationId} was not found.");
+                throw new ObjectNotFoundException($"Application with id {applicationId} was not found.");
 
             //Get the user
             ResinUser user = await GetUserAsync(cancellationToken);
 
-            if (user == null)
-                throw new ApplicationException($"User not found.");
-
+            //Create the data for the request
             var data = new
             {
                 user = user.Id,
@@ -219,6 +236,7 @@ namespace Resin.Api.Client
             //Do it
             var token = await PostAsync($"device/register?apikey={apiKey}", data, cancellationToken);
 
+            //Woot - we're done
             return token.ToDataObjectDirect<RegisterDeviceResult>(this);
         }
 
@@ -248,6 +266,7 @@ namespace Resin.Api.Client
 
         /// <summary>
         /// Get a single device by id.
+        /// https://docs.resin.io/runtime/data-api/#get-device-by-id
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
@@ -261,6 +280,7 @@ namespace Resin.Api.Client
 
         /// <summary>
         /// Get a single device by name.
+        /// https://docs.resin.io/runtime/data-api/#get-device-by-name
         /// </summary>
         /// <param name="name"></param>
         /// <param name="cancellationToken"></param>
@@ -277,11 +297,23 @@ namespace Resin.Api.Client
                 throw new ObjectNotFoundException($"Unable to find device with name '{name}'.");
 
             return device;
+        }
 
+        /// <summary>
+        /// Delete a specific device.
+        /// https://docs.resin.io/runtime/data-api/#delete-device
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task DeleteDeviceAsync(int id, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return DeleteAsync($"device({id})", cancellationToken);
         }
 
         /// <summary>
         /// Add a note to a specific device.
+        /// https://docs.resin.io/runtime/data-api/#add-note
         /// </summary>
         /// <param name="id"></param>
         /// <param name="note"></param>
@@ -293,7 +325,8 @@ namespace Resin.Api.Client
         }
 
         /// <summary>
-        /// 
+        /// Get the current status of the specified device
+        /// https://docs.resin.io/runtime/data-api/#get-status
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
@@ -313,38 +346,90 @@ namespace Resin.Api.Client
         }
 
         /// <summary>
-        /// Gets the 
+        /// Get all environment variables of the device specified by the given id.
+        /// https://docs.resin.io/runtime/data-api/#create-device-variable
         /// </summary>
         /// <param name="deviceId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<DeviceEnvironmentVariable[]> GetDeviceEnvironmentalVariablesAsync(int deviceId,
+        public async Task<EnvironmentVariable[]> GetDeviceEnvironmentalVariablesAsync(int deviceId,
             CancellationToken cancellationToken = new CancellationToken())
         {
             JToken token = await GetAsync($"device_environment_variable?$filter=device eq {deviceId}", cancellationToken);
 
-            return token.ToDataObjectArray<DeviceEnvironmentVariable>(this);
+            return token.ToDataObjectArray<DeviceEnvironmentVariable>(this)
+                .Cast<EnvironmentVariable>()
+                .ToArray();
         }
 
-        public Task CreateDeviceEnvironmentVariableAsync(CancellationToken cancellationToken = new CancellationToken())
+        /// <summary>
+        /// Create new environment variable with a given name and value, for the given device
+        /// https://docs.resin.io/runtime/data-api/#create-device-variable
+        /// </summary>
+        /// <param name="deviceId"></param>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task CreateDeviceEnvironmentVariableAsync(int deviceId, string name, string value, CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            var data = new
+            {
+                device = deviceId,
+                env_var_name = name,
+                value
+            };
+
+            return PostAsync("device_environment_variable", data, cancellationToken);
         }
 
-        public Task UpdateDeviceEnvironmentVariable(CancellationToken cancellationToken = new CancellationToken())
+        /// <summary>
+        /// Update a device environment variable with a new value, given the ID of the variable
+        /// https://docs.resin.io/runtime/data-api/#update-device-variable
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="value"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task UpdateDeviceEnvironmentVariable(int id, string value, CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            var data = new
+            {
+                value
+            };
+
+            return PatchAsync($"device_environment_variable({id})", data, cancellationToken);
         }
 
-        public Task DeleteDeviceApplicationVariableAsync(CancellationToken cancellationToken = new CancellationToken())
+        /// <summary>
+        /// Remove a device environment variable with a specified ID
+        /// https://docs.resin.io/runtime/data-api/#delete-device-variable
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task DeleteDeviceEnvironmentVariableAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            return DeleteAsync($"device_environment_variable({id})", cancellationToken);
+        }
+
+        /// <summary>
+        /// Starts a blink pattern on a LED for 15 seconds, if your device has one. Responds with an empty 200 response. It implements the "identify device" feature from the dashboard.
+        /// https://docs.resin.io/runtime/supervisor-api/#post-v1-blink
+        /// </summary>
+        /// <param name="deviceId">The id </param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task BlinkDeviceAsync(int deviceId, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return DeviceCommandAsync(deviceId, "blink", cancellationToken);
         }
 
         /// <summary>
         /// Restarts the application container on a given device. 
+        /// https://docs.resin.io/runtime/supervisor-api/#post-v1-restart
         /// </summary>
-        /// <param name="deviceId">The id </param>
+        /// <param name="deviceId">The id of the device to be restarted. </param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public Task RestartDeviceAsync(int deviceId, CancellationToken cancellationToken = new CancellationToken())
@@ -354,6 +439,7 @@ namespace Resin.Api.Client
 
         /// <summary>
         /// Reboots the device.
+        /// https://docs.resin.io/runtime/supervisor-api/#post-v1-reboot
         /// </summary>
         /// <param name="deviceId"></param>
         /// <param name="cancellationToken"></param>
@@ -365,6 +451,7 @@ namespace Resin.Api.Client
 
         /// <summary>
         /// Dangerous. Shuts down the device.
+        /// https://docs.resin.io/runtime/supervisor-api/#post-v1-shutdown
         /// </summary>
         /// <param name="deviceId"></param>
         /// <param name="cancellationToken"></param>
@@ -392,7 +479,8 @@ namespace Resin.Api.Client
         }
 
         /// <summary>
-        ///  Move a device to another application.
+        /// Move the specified device to another application, given the application ID.
+        /// https://docs.resin.io/runtime/data-api/#move-device
         /// </summary>
         /// <param name="deviceId"></param>
         /// <param name="applicationId"></param>
@@ -400,7 +488,12 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public Task MoveDeviceAsync(int deviceId, int applicationId, CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            var request = new
+            {
+                application = applicationId
+            };
+
+            return PatchAsync($"device({deviceId})", request, cancellationToken);
         }
 
         #endregion

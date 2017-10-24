@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Resin.Api.Client
+namespace Resin.Api.Client.Exceptions
 {
-    public class ObjectNotFoundException : ApiClientException
+    public class ObjectNotFoundException : ResinApiClientException
     {
         public ObjectNotFoundException()
         {
