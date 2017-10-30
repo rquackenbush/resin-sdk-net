@@ -69,9 +69,17 @@ namespace ResinExplorer.ViewModel
             return SelectedApplication != null;
         }
 
-        private void DeleteApplication()
+        private async void DeleteApplication()
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _client.DeleteApplicationAsync(SelectedApplication.Id);
+                Applications.Remove(SelectedApplication);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.Source);
+            }
         }
 
         private async void CreateApplication()
@@ -89,7 +97,7 @@ namespace ResinExplorer.ViewModel
             }
             catch (Exception ex)
             {
-                // TODO show exception dialog
+                MessageBox.Show(ex.Message, ex.Source);
             }
         }
 
