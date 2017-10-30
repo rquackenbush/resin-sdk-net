@@ -19,7 +19,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>            
         </Grid.RowDefinitions>
 
         <Grid>
@@ -52,6 +52,9 @@
             <TextBlock Grid.Row="1" Grid.Column="0">Address</TextBlock>
             <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=ApiAddress, UpdateSourceTrigger=PropertyChanged}"/>
 
+            <CheckBox Grid.Row="2" Content="Remember token?" IsThreeState="False" 
+                      IsChecked="{Binding ShouldRememberToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
         </Grid>
 
         <StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
@@ -65,5 +68,7 @@
             <Button Command="{Binding Path=OkCommand}" IsDefault="True">_OK</Button>
             <Button IsCancel="True">_Cancel</Button>
         </StackPanel>
+        
+        
     </Grid>
 </Window>

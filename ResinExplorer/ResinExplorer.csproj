@@ -57,6 +57,7 @@
       <HintPath>..\Resin.Api.Client\bin\Debug\net46\Resin.Api.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
@@ -84,6 +85,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="View\CreateApplicationDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\LogonDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -97,9 +102,17 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ApplicationContainerFactory.cs" />
+    <Compile Include="Core\DpApi.cs" />
+    <Compile Include="Core\UserSettings.cs" />
+    <Compile Include="Interfaces\ISettings.cs" />
     <Compile Include="ViewModel\ApplicationViewModel.cs" />
+    <Compile Include="ViewModel\CreateApplicationDialogViewModel.cs" />
+    <Compile Include="ViewModel\DeviceViewModel.cs" />
     <Compile Include="ViewModel\LogonDialogViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="View\CreateApplicationDialogView.xaml.cs">
+      <DependentUpon>CreateApplicationDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\LogonDialogView.xaml.cs">
       <DependentUpon>LogonDialogView.xaml</DependentUpon>
     </Compile>

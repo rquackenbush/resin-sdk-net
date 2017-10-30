@@ -1,6 +1,6 @@
-﻿using System;
-using GalaSoft.MvvmLight;
+﻿using GalaSoft.MvvmLight;
 using Resin.Api.Client.Domain;
+using System;
 
 namespace ResinExplorer.ViewModel
 {
@@ -27,6 +27,11 @@ namespace ResinExplorer.ViewModel
         public string DeviceType
         {
             get { return _model.DeviceType; }
+        }
+
+        public string CommitReference
+        {
+            get { return _model.Commit; }
         }
     }
 }

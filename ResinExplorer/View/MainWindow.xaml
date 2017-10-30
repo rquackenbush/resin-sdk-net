@@ -7,7 +7,7 @@
         xmlns:viewModel="clr-namespace:ResinExplorer.ViewModel"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModel:MainViewModel}"
-        Title="resin.io Explorer" Height="500" Width="700" Icon="/ResinExplorer;component/images/ArchitectureExplorer_16x.png">
+        Title="resin.io Explorer" Height="500" Width="900" Icon="/ResinExplorer;component/images/ArchitectureExplorer_16x.png">
     
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding Path=RefreshCommand}"/>
@@ -16,17 +16,31 @@
     <Window.Resources>
         
         <DataTemplate x:Key="ApplicationDataTemplate" DataType="viewModel:ApplicationViewModel">
-            <TextBlock Text="{Binding Path=Name}"></TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Path=Name}" MinWidth="100"/>
+                <TextBlock Text="{Binding Path=DeviceType}" MinWidth="100"/>
+                <TextBlock Text="{Binding Path=Id}" MinWidth="100"/>
+                <TextBlock Text="{Binding Path=CommitReference}" MinWidth="100"/>
+            </StackPanel>            
         </DataTemplate>
+
+        <DataTemplate x:Key="DeviceDataTemplate" DataType="viewModel:DeviceViewModel">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Path=Name}" MinWidth="100"/>
+                <TextBlock Text="{Binding Path=DeviceType}" MinWidth="100"/>
+                <TextBlock Text="{Binding Path=Id}" MinWidth="100"/>
+                <TextBlock Text="{Binding Path=CommitReference}" MinWidth="100"/>
+            </StackPanel>
+        </DataTemplate>
+
         
+
     </Window.Resources>
     
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
         <Menu>
@@ -40,9 +54,56 @@
                 <MenuItem Header="_About"></MenuItem>
             </MenuItem>
         </Menu>
-       
-        <ListBox Grid.Row="2" ItemsSource="{Binding Path=Applications}" ItemTemplate="{StaticResource ApplicationDataTemplate}">
-            
-        </ListBox>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions >
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Header="Applications" Grid.Column="0">
+                <Grid >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <ToolBar Grid.Row="0" >
+                        <Button Content="Create" Command="{Binding CreateApplicationCommand}"/>
+                        <Button Content="Delete" Command="{Binding DeleteApplicationCommand}"/>
+                    </ToolBar>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Path=Applications}" ItemTemplate="{StaticResource ApplicationDataTemplate}" 
+                             SelectedItem="{Binding SelectedApplication, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                </Grid>
+            </GroupBox>
+
+            <GridSplitter Grid.Column="1"/>
+
+            <GroupBox Header="Devices" Grid.Column="2">
+                <Grid >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <ToolBar Grid.Row="0" >
+                        <Button Content="Create" Command="{Binding CreateDeviceCommand}"/>
+                        <Button Content="Delete" Command="{Binding DeleteDeviceCommand}"/>
+                    </ToolBar>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Path=Devices}" ItemTemplate="{StaticResource DeviceDataTemplate}"
+                             SelectedItem="{Binding SelectedDevice, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                </Grid>
+            </GroupBox>
+
+
+        </Grid>
+        
+        
+
+
+
     </Grid>
 </Window>

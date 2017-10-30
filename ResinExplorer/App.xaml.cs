@@ -1,9 +1,10 @@
-﻿using System;
-using System.Windows;
-using Autofac;
+﻿using Autofac;
 using Cas.Common.WPF.Interfaces;
 using Resin.Api.Client;
+using ResinExplorer.Interfaces;
 using ResinExplorer.ViewModel;
+using System;
+using System.Windows;
 
 namespace ResinExplorer
 {
@@ -20,6 +21,15 @@ namespace ResinExplorer
 
                 var logonViewModel = container.Resolve<LogonDialogViewModel>();
 
+                var settings = container.Resolve<ISettings>();
+
+                if (settings.ShouldRememberToken)
+                {
+                    logonViewModel.Token = settings.Token;
+                }
+
+                logonViewModel.ShouldRememberToken = settings.ShouldRememberToken;
+
                 while (true)
                 {
                     try
@@ -35,6 +45,13 @@ namespace ResinExplorer
                             //Get the new token (this also verifies the old one)
                             string newToken = await tempClient.WhoamiAsync();
 
+                            settings.ShouldRememberToken = logonViewModel.ShouldRememberToken;
+
+                            if (logonViewModel.ShouldRememberToken)
+                            {
+                                settings.Token = newToken;
+                            }
+
                             //Create a new client
                             var client = new ResinApiClient(new SimpleTokenProvider(newToken), logonViewModel.ApiAddress);
 
@@ -46,7 +63,7 @@ namespace ResinExplorer
 
                             return;
                         }
-                        
+
                         //The user cancelled. Exit the application.
                         return;
                     }

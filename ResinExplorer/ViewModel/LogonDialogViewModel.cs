@@ -1,9 +1,9 @@
-﻿using System;
-using System.Windows.Input;
-using Cas.Common.WPF.Behaviors;
+﻿using Cas.Common.WPF.Behaviors;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
 using Resin.Api.Client;
+using System;
+using System.Windows.Input;
 
 namespace ResinExplorer.ViewModel
 {
@@ -35,6 +35,13 @@ namespace ResinExplorer.ViewModel
             return true;
         }
 
+        private bool _shouldRememberToken;
+        public bool ShouldRememberToken
+        {
+            get { return _shouldRememberToken; }
+            set { _shouldRememberToken = value; RaisePropertyChanged(); }
+        }
+
         public string Token
         {
             get { return _token; }
@@ -50,7 +57,7 @@ namespace ResinExplorer.ViewModel
             get { return _apiAddress; }
             set
             {
-                _apiAddress = value; 
+                _apiAddress = value;
                 RaisePropertyChanged();
             }
         }
