@@ -1,10 +1,9 @@
 ﻿
-using System;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using Resin.Api.Client;
 using Resin.Api.Client.Domain;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace resin
 {
@@ -12,7 +11,8 @@ namespace resin
     {
         static void Main(string[] args)
         {
-            string token = GetToken();
+            //string token = GetToken();
+            string token = @"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MjcxNTMsInVzZXJuYW1lIjoibHVib21pcl9sYXNraSIsImVtYWlsIjoibHVib21pci5sYXNraUBzZGUuY3oiLCJjcmVhdGVkX2F0IjoiMjAxNy0xMC0yNVQxMDoxNDoxOC41ODJaIiwiZmlyc3RfbmFtZSI6Ikx1Ym9taXIiLCJsYXN0X25hbWUiOiJMYXNraSIsImNvbXBhbnkiOiIiLCJhY2NvdW50X3R5cGUiOiJwcm9mZXNzaW9uYWwiLCJqd3Rfc2VjcmV0IjoiSElSUURSNDdRSU1YN1FGU1hKSFFWNExXQk4zRE1BNUIiLCJoYXNfZGlzYWJsZWRfbmV3c2xldHRlciI6dHJ1ZSwic29jaWFsX3NlcnZpY2VfYWNjb3VudCI6W10sImhhc1Bhc3N3b3JkU2V0Ijp0cnVlLCJuZWVkc1Bhc3N3b3JkUmVzZXQiOmZhbHNlLCJwdWJsaWNfa2V5Ijp0cnVlLCJmZWF0dXJlcyI6W10sImludGVyY29tVXNlck5hbWUiOiJsdWJvbWlyX2xhc2tpIiwiaW50ZXJjb21Vc2VySGFzaCI6Ijc2YmQ2MjkxNTMxMzQ4YzM2NzgxZWI2MTA5MmE5NzI4YTQ1Yzk0MmE0N2YyOWYwOGYyN2I0ZDA5MmQ1Njc3YzgiLCJwZXJtaXNzaW9ucyI6W10sImF1dGhUaW1lIjoxNTA4OTI2NDc2MzM2LCJhY3RvciI6MTk4Njk1MSwiaWF0IjoxNTA5MzgxNjYxLCJleHAiOjE1MDk5ODY0NjF9.hfThhjaWOTtFGvYrC64WHk_4Ito_oSfLpnj1Su_dLMg";
 
             if (!string.IsNullOrWhiteSpace(token))
             {
@@ -26,7 +26,7 @@ namespace resin
 
             string codeDirectory = Path.GetDirectoryName(location);
 
-            string tokenPath = Path.Combine(codeDirectory,  @"..\..\..\token.txt");
+            string tokenPath = Path.Combine(codeDirectory, @"..\..\..\token.txt");
 
             if (File.Exists(tokenPath))
             {
@@ -59,9 +59,9 @@ namespace resin
 
             //Console.WriteLine(key);
 
-            //string uuid = Guid.NewGuid().ToString("N");
+            string uuid = Guid.NewGuid().ToString("N");
 
-            //var deviceId = await client.RegisterDeviceAsync(stagingApplication.Id, uuid);
+            var deviceId = await client.RegisterDeviceAsync(applications[0].Id, uuid);
 
             //Console.WriteLine($"DeviceId: {deviceId}");
 

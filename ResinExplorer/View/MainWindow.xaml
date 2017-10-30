@@ -17,7 +17,15 @@
         
         <DataTemplate x:Key="ApplicationDataTemplate" DataType="viewModel:ApplicationViewModel">
             <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding EditNameCommand}" ToolTip="Edit name">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Image Source="/ResinExplorer;component/images/Edit_16x16.png"/>   
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>                
                 <TextBlock Text="{Binding Path=Name}" MinWidth="100"/>
+                <Button Content="Edit Variables" Command="{Binding EditVariablesCommand}"/>
                 <TextBlock Text="{Binding Path=DeviceType}" MinWidth="100"/>
                 <TextBlock Text="{Binding Path=Id}" MinWidth="100"/>
                 <TextBlock Text="{Binding Path=CommitReference}" MinWidth="100"/>
@@ -26,6 +34,13 @@
 
         <DataTemplate x:Key="DeviceDataTemplate" DataType="viewModel:DeviceViewModel">
             <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding EditNameCommand}" ToolTip="Edit name">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Image Source="/ResinExplorer;component/images/Edit_16x16.png"/>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
                 <TextBlock Text="{Binding Path=Name}" MinWidth="100"/>
                 <TextBlock Text="{Binding Path=DeviceType}" MinWidth="100"/>
                 <TextBlock Text="{Binding Path=Id}" MinWidth="100"/>

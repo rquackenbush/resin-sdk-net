@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using Resin.Api.Client.Domain;
+using Resin.Api.Client.Exceptions;
+using Resin.Api.Client.Interfaces;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using Resin.Api.Client.Domain;
-using Resin.Api.Client.Exceptions;
-using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
 {
@@ -19,7 +19,7 @@ namespace Resin.Api.Client
         /// </summary>
         /// <param name="tokenProvider"></param>
         /// <param name="baseAddress"></param>
-        public ResinApiClient(ITokenProvider tokenProvider, string baseAddress = DefaultApiAddress) 
+        public ResinApiClient(ITokenProvider tokenProvider, string baseAddress = DefaultApiAddress)
             : base(tokenProvider,
             baseAddress)
         {
@@ -80,7 +80,7 @@ namespace Resin.Api.Client
                 await ThrowOnErrorAsync(response);
 
                 //Save an updated veresion of the token
-                return await response.Content.ReadAsStringAsync();               
+                return await response.Content.ReadAsStringAsync();
             }
         }
 
@@ -160,11 +160,11 @@ namespace Resin.Api.Client
         }
 
         public async Task<ResinApplication> CreateApplicationAsync(
-            string name, 
+            string name,
             string deviceType,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var data = new 
+            var data = new
             {
                 app_name = name,
                 device_type = deviceType
@@ -192,7 +192,7 @@ namespace Resin.Api.Client
             string raw = await PostRawAsync($"/api-key/application/{applicationId}/provisioning", cancellationToken);
 
             if (raw.Length >= 3)
-            { 
+            {
                 return raw.Substring(1, raw.Length - 2);
             }
 
@@ -202,7 +202,7 @@ namespace Resin.Api.Client
         #endregion
 
         #region Devices
-     
+
         /// <summary>
         /// Registers a new device.
         /// </summary>
@@ -221,6 +221,7 @@ namespace Resin.Api.Client
             //Get the user
             ResinUser user = await GetUserAsync(cancellationToken);
 
+            //uuid = Guid.NewGuid().ToString("N");
             //Create the data for the request
             var data = new
             {
@@ -234,13 +235,13 @@ namespace Resin.Api.Client
             string apiKey = await GetProvisioningKeyAsync(applicationId, cancellationToken);
 
             //Do it
-            var token = await PostAsync($"device/register?apikey={apiKey}", data, cancellationToken);
+            var token = await PostAsync($"device/register?apikey={apiKey}", Guid.NewGuid().ToString("N"), cancellationToken);
 
             //Woot - we're done
             return token.ToDataObjectDirect<RegisterDeviceResult>(this);
         }
 
-        
+
         /// <summary>
         /// https://docs.resin.io/runtime/data-api/#get-all-devices
         /// </summary>
@@ -321,7 +322,7 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public Task AddNoteAsync(int id, string note, CancellationToken cancellationToken = new CancellationToken())
         {
-            return PatchAsync($"device({id})", new {note}, cancellationToken);
+            return PatchAsync($"device({id})", new { note }, cancellationToken);
         }
 
         /// <summary>
@@ -402,6 +403,21 @@ namespace Resin.Api.Client
         }
 
         /// <summary>
+        /// Update an application environment variable with a new value, given the ID of the variable
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name">Application variable name</param>
+        /// <param name="newValue"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task UpdateApplicationVariableAsync(int id, string name, string newValue, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var data = new { name = newValue };
+
+            return PatchAsync($"environment_variable({id})", data, cancellationToken);
+        }
+
+        /// <summary>
         /// Remove a device environment variable with a specified ID
         /// https://docs.resin.io/runtime/data-api/#delete-device-variable
         /// </summary>
@@ -423,6 +439,20 @@ namespace Resin.Api.Client
         public Task BlinkDeviceAsync(int deviceId, CancellationToken cancellationToken = new CancellationToken())
         {
             return DeviceCommandAsync(deviceId, "blink", cancellationToken);
+        }
+
+        public Task RenameDeviceAsync(int deviceId, string newName, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var data = new { name = newName };
+
+            return PatchAsync($"device({deviceId})", data, cancellationToken);
+        }
+
+        public Task RenameApplicationAsync(int deviceId, string newName, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var data = new { name = newName };
+
+            return PatchAsync($"application({deviceId})", data, cancellationToken);
         }
 
         /// <summary>

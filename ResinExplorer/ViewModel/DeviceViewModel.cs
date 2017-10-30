@@ -1,17 +1,40 @@
-﻿using GalaSoft.MvvmLight;
+﻿using Cas.Common.WPF.Interfaces;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.CommandWpf;
+using Resin.Api.Client;
 using Resin.Api.Client.Domain;
 using System;
+using System.Windows.Input;
 
 namespace ResinExplorer.ViewModel
 {
     public class DeviceViewModel : ViewModelBase
     {
-        private readonly ResinDevice _model;
+        public ICommand EditNameCommand { get; private set; }
 
-        public DeviceViewModel(ResinDevice model)
+        private readonly ResinDevice _model;
+        private readonly ITextEditService _textEditService;
+        private readonly ResinApiClient _client;
+
+        public DeviceViewModel(ResinDevice model, ITextEditService textEditService, ResinApiClient client)
         {
-            if (model == null) throw new ArgumentNullException(nameof(model));
-            _model = model;
+            _model = model ?? throw new ArgumentNullException(nameof(model));
+            _textEditService = textEditService ?? throw new ArgumentNullException(nameof(textEditService));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+
+            EditNameCommand = new RelayCommand(EditName);
+        }
+
+        private async void EditName()
+        {
+            string name = Name;
+            _textEditService.EditText(Name, "Edit the text:", "Edit Application Name", t => name = t, t => !string.IsNullOrWhiteSpace(t));
+
+            if (name != Name)
+            {
+                await _client.RenameDeviceAsync(Id, name);
+            }
+
         }
 
         public int Id

@@ -18,18 +18,17 @@ namespace ResinExplorer.ViewModel
         private readonly ResinApiClient _client;
         private bool _isBusy;
         private ObservableCollection<ApplicationViewModel> _applications;
-        private DeviceViewModel[] _devices;
+        private ObservableCollection<DeviceViewModel> _devices;
         private ApplicationViewModel _selectedApplication;
         private DeviceViewModel _selectedDevice;
+        private ITextEditService _textEditService;
 
-
-        public MainViewModel(IViewService viewService, ResinApiClient client)
+        public MainViewModel(IViewService viewService, ResinApiClient client, ITextEditService textEditService)
         {
-            if (viewService == null) throw new ArgumentNullException(nameof(viewService));
-            if (client == null) throw new ArgumentNullException(nameof(client));
+            _textEditService = textEditService ?? throw new ArgumentNullException(nameof(textEditService));
+            _viewService = viewService ?? throw new ArgumentNullException(nameof(viewService));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
 
-            _viewService = viewService;
-            _client = client;
             InitializeCommands();
 
             Refresh();
@@ -42,6 +41,12 @@ namespace ResinExplorer.ViewModel
             DeleteApplicationCommand = new RelayCommand(DeleteApplication, CanDelete);
             CreateDeviceCommand = new RelayCommand(CreateDevice);
             DeleteDeviceCommand = new RelayCommand(DeleteDevice, CanDeleteDevice);
+            EditApplicationNameCommand = new RelayCommand(EditApplicationName);
+        }
+
+        private void EditApplicationName()
+        {
+            //_textEditService.EditText()
         }
 
         private void DeleteDevice()
@@ -53,9 +58,16 @@ namespace ResinExplorer.ViewModel
             return SelectedDevice != null;
         }
 
-        private void CreateDevice()
+        private async void CreateDevice()
         {
-            //throw new NotImplementedException();
+            var viewModel = new CreateDeviceDialogViewModel(Applications);
+
+            if (_viewService.ShowDialog(viewModel) == true)
+            {
+                RegisterDeviceResult deviceResult = await _client.RegisterDeviceAsync(viewModel.SelectedApplication.Id, Guid.NewGuid().ToString("N"));
+                ResinDevice device = await _client.GetDeviceAsync(deviceResult.Id);
+                Devices.Add(new DeviceViewModel(device, _textEditService, _client));
+            }
         }
 
         private void Refresh()
@@ -91,7 +103,7 @@ namespace ResinExplorer.ViewModel
                 if (_viewService.ShowDialog(viewModel) == true)
                 {
                     var newResinApplication = await _client.CreateApplicationAsync(viewModel.Name, viewModel.DeviceType);
-                    ApplicationViewModel newApplication = new ApplicationViewModel(newResinApplication);
+                    ApplicationViewModel newApplication = new ApplicationViewModel(newResinApplication, _textEditService, _client, _viewService);
                     Applications.Add(newApplication);
                 }
             }
@@ -101,11 +113,13 @@ namespace ResinExplorer.ViewModel
             }
         }
 
+
         public ICommand RefreshCommand { get; private set; }
         public ICommand CreateApplicationCommand { get; private set; }
         public ICommand DeleteApplicationCommand { get; private set; }
         public ICommand CreateDeviceCommand { get; private set; }
         public ICommand DeleteDeviceCommand { get; private set; }
+        public ICommand EditApplicationNameCommand { get; private set; }
 
         private CancellationTokenSource CreateCancellationTokenSource(double timeoutSeconds = 30)
         {
@@ -124,7 +138,7 @@ namespace ResinExplorer.ViewModel
 
                 Applications = new ObservableCollection<ApplicationViewModel>(
                         applications
-                        .Select(a => new ApplicationViewModel(a))
+                        .Select(a => new ApplicationViewModel(a, _textEditService, _client, _viewService))
                         .OrderBy(a => a.Name)
                     );
             }
@@ -148,8 +162,7 @@ namespace ResinExplorer.ViewModel
 
                 ResinDevice[] devices = await _client.GetDevicesAsync(cts.Token);
 
-                Devices = devices.Select(d => new DeviceViewModel(d)).OrderBy(d => d.Name).ToArray();
-
+                Devices = new ObservableCollection<DeviceViewModel>(devices.Select(d => new DeviceViewModel(d, _textEditService, _client)).OrderBy(d => d.Name));
 
             }
             catch (Exception ex)
@@ -182,7 +195,7 @@ namespace ResinExplorer.ViewModel
             }
         }
 
-        public DeviceViewModel[] Devices
+        public ObservableCollection<DeviceViewModel> Devices
         {
             get { return _devices; }
             set { _devices = value; RaisePropertyChanged(); }

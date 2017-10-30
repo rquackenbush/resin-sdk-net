@@ -89,6 +89,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\CreateDeviceDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\EditVariablesDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\LogonDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -107,11 +115,20 @@
     <Compile Include="Interfaces\ISettings.cs" />
     <Compile Include="ViewModel\ApplicationViewModel.cs" />
     <Compile Include="ViewModel\CreateApplicationDialogViewModel.cs" />
+    <Compile Include="ViewModel\CreateDeviceDialogViewModel.cs" />
     <Compile Include="ViewModel\DeviceViewModel.cs" />
+    <Compile Include="ViewModel\EditVariablesDialogViewModel.cs" />
+    <Compile Include="ViewModel\EnvironmentVariableViewModel.cs" />
     <Compile Include="ViewModel\LogonDialogViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="View\CreateApplicationDialogView.xaml.cs">
       <DependentUpon>CreateApplicationDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\CreateDeviceDialogView.xaml.cs">
+      <DependentUpon>CreateDeviceDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\EditVariablesDialogView.xaml.cs">
+      <DependentUpon>EditVariablesDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\LogonDialogView.xaml.cs">
       <DependentUpon>LogonDialogView.xaml</DependentUpon>
@@ -148,7 +165,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\Edit_16x16.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\ArchitectureExplorer_16x.png" />
   </ItemGroup>

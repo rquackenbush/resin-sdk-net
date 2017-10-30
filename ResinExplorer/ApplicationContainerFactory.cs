@@ -17,17 +17,21 @@ namespace ResinExplorer
             builder.RegisterType<MainViewModel>();
             builder.RegisterType<LogonDialogViewModel>();
             builder.RegisterType<CreateApplicationDialogViewModel>();
-
+            builder.RegisterType<EditVariablesDialogViewModel>();
+            builder.RegisterType<CreateDeviceDialogViewModel>();
 
             var viewService = new ViewService();
             viewService.Register<LogonDialogViewModel, LogonDialogView>();
             viewService.Register<MainViewModel, MainWindow>();
             viewService.Register<CreateApplicationDialogViewModel, CreateApplicationDialogView>();
+            viewService.Register<EditVariablesDialogViewModel, EditVariablesDialogView>();
+            viewService.Register<CreateDeviceDialogViewModel, CreateDeviceDialogView>();
 
             builder.RegisterInstance(viewService)
                 .As<IViewService>();
 
             builder.RegisterType<UserSettings>().As<ISettings>().SingleInstance();
+            builder.RegisterType<TextEditService>().As<ITextEditService>();
 
             return builder.Build();
         }
