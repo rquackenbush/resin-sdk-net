@@ -4,10 +4,27 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ResinExplorer.View"
+        xmlns:viewModel="clr-namespace:ResinExplorer.ViewModel"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:behaviors="clr-namespace:Cas.Common.WPF.Behaviors;assembly=Cas.Common.WPF"
         mc:Ignorable="d"
         Title="Edit Variables" Height="300" Width="300">
+
+    <i:Interaction.Behaviors>
+        <behaviors:CloseableBehavior/>
+    </i:Interaction.Behaviors>
+
     <Grid>
-        <DataGrid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ToolBar Grid.Row="0">
+            <Button Content="Add" Command="{Binding AddVariableCommand}"/>
+            <Button Content="Delete" Command="{Binding RemoveVariableCommand}"/>
+        </ToolBar>
+        <DataGrid Grid.Row="1" SelectedItem="{Binding SelectedVariable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
             <DataGridTemplateColumn Header="Abc">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
@@ -20,5 +37,17 @@
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
         </DataGrid>
+
+        <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="4"/>
+                    <Setter Property="MinWidth" Value="60"></Setter>
+                </Style>
+            </StackPanel.Resources>
+
+            <Button Command="{Binding Path=OkCommand}" IsDefault="True">_OK</Button>
+            <Button IsCancel="True">_Cancel</Button>
+        </StackPanel>
     </Grid>
 </Window>

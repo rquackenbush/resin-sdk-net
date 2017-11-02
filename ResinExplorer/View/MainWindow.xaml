@@ -34,6 +34,13 @@
 
         <DataTemplate x:Key="DeviceDataTemplate" DataType="viewModel:DeviceViewModel">
             <StackPanel Orientation="Horizontal">
+                <StackPanel.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Edit note.." Command="{Binding EditNoteCommand}"/>
+                        <MenuItem Header="Edit name.." Command="{Binding EditNameCommand}"/>
+                    </ContextMenu>
+                </StackPanel.ContextMenu>
+                
                 <Button Command="{Binding EditNameCommand}" ToolTip="Edit name">
                     <Button.Template>
                         <ControlTemplate>

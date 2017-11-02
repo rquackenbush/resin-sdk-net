@@ -1,5 +1,5 @@
-﻿using System;
-using Resin.Api.Client.Interfaces;
+﻿using Resin.Api.Client.Interfaces;
+using System;
 
 namespace Resin.Api.Client.Domain
 {

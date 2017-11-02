@@ -1,13 +1,13 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Resin.Api.Client.Exceptions;
+using Resin.Api.Client.Interfaces;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Resin.Api.Client.Exceptions;
-using Resin.Api.Client.Interfaces;
 
 namespace Resin.Api.Client
 {
@@ -61,7 +61,7 @@ namespace Resin.Api.Client
                     content = await response.Content.ReadAsStringAsync();
                 }
                 catch (Exception)
-                {   
+                {
                 }
 
                 throw new ResinApiClientException($"{response.StatusCode}: {response.ReasonPhrase} {content}");
@@ -112,6 +112,11 @@ namespace Resin.Api.Client
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected internal async Task<JToken> PostAsync(string requestUri, object request, CancellationToken cancellationToken)
+        {
+            return await PostAsync(new Uri(new Uri(_baseAddress), requestUri), request, cancellationToken);
+        }
+
+        protected internal async Task<JToken> PostAsync(Uri requestUri, object request, CancellationToken cancellationToken)
         {
             using (HttpClient client = await CreateHttpClientAsync(cancellationToken))
             {
@@ -166,8 +171,8 @@ namespace Resin.Api.Client
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected internal async Task PatchAsync(
-            string requestUri, 
-            object request, 
+            string requestUri,
+            object request,
             CancellationToken cancellationToken = new CancellationToken())
         {
             string requestJson = JsonConvert.SerializeObject(request);

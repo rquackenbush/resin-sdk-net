@@ -49,8 +49,10 @@ namespace ResinExplorer.ViewModel
             //_textEditService.EditText()
         }
 
-        private void DeleteDevice()
+        private async void DeleteDevice()
         {
+            await _client.DeleteDeviceAsync(SelectedDevice.Id);
+            Devices.Remove(SelectedDevice);
         }
 
         private bool CanDeleteDevice()
@@ -64,9 +66,9 @@ namespace ResinExplorer.ViewModel
 
             if (_viewService.ShowDialog(viewModel) == true)
             {
-                RegisterDeviceResult deviceResult = await _client.RegisterDeviceAsync(viewModel.SelectedApplication.Id, Guid.NewGuid().ToString("N"));
-                ResinDevice device = await _client.GetDeviceAsync(deviceResult.Id);
-                Devices.Add(new DeviceViewModel(device, _textEditService, _client));
+                var deviceResult = await _client.RegisterDeviceAsync(viewModel.SelectedApplication.Id, Guid.NewGuid().ToString("N"));
+                var newDevice = await _client.GetDeviceAsync(deviceResult.Id);
+                Devices.Add(new DeviceViewModel(newDevice, _textEditService, _client));
             }
         }
 

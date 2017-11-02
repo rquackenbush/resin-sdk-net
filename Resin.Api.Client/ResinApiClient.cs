@@ -175,6 +175,24 @@ namespace Resin.Api.Client
             return token.ToDataObjectDirect<ResinApplication>(this);
         }
 
+        public async Task<ResinApplication> CreateApplicationVariableAsync(
+            int id,
+            string name,
+            string value,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            var data = new
+            {
+                application = id,
+                name = name,
+                value = value
+            };
+
+            JToken token = await PostAsync("environment_variable", data, cancellationToken);
+
+            return token.ToDataObjectDirect<ResinApplication>(this);
+        }
+
         /// <summary>
         /// https://docs.resin.io/runtime/data-api/#delete-application
         /// </summary>
@@ -221,7 +239,6 @@ namespace Resin.Api.Client
             //Get the user
             ResinUser user = await GetUserAsync(cancellationToken);
 
-            //uuid = Guid.NewGuid().ToString("N");
             //Create the data for the request
             var data = new
             {
@@ -235,7 +252,11 @@ namespace Resin.Api.Client
             string apiKey = await GetProvisioningKeyAsync(applicationId, cancellationToken);
 
             //Do it
-            var token = await PostAsync($"device/register?apikey={apiKey}", Guid.NewGuid().ToString("N"), cancellationToken);
+            //var token = await PostAsync($"device/register?apikey={apiKey}", data, cancellationToken);
+
+            Uri uri = new Uri($"https://api.resin.io/device/register?apikey={apiKey}");
+            ////Do it
+            var token = await PostAsync(uri, data, cancellationToken);
 
             //Woot - we're done
             return token.ToDataObjectDirect<RegisterDeviceResult>(this);
@@ -254,16 +275,18 @@ namespace Resin.Api.Client
             return token.ToDataObjectArray<ResinDevice>(this);
         }
 
-        /// <summary>
-        /// Gets the devices for a given application.
-        /// </summary>
-        /// <param name="applicationId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<ResinDevice[]> GetDevicesAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
-        {
-            throw new NotImplementedException();
-        }
+        ///// <summary>
+        ///// Gets the devices for a given application.
+        ///// </summary>
+        ///// <param name="applicationId"></param>
+        ///// <param name="cancellationToken"></param>
+        ///// <returns></returns>
+        //public async Task<ResinDevice[]> GetDevicesAsync(int applicationId, CancellationToken cancellationToken = new CancellationToken())
+        //{
+        //    JToken token = await GetAsync("device", cancellationToken);
+
+        //    return token.ToDataObjectArray<ResinDevice>(this);
+        //}
 
         /// <summary>
         /// Get a single device by id.
@@ -274,9 +297,9 @@ namespace Resin.Api.Client
         /// <returns></returns>
         public async Task<ResinDevice> GetDeviceAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
-            JToken token = await GetAsync($"v1/device({id})", cancellationToken);
-
-            return token.ToDataObject<ResinDevice>(this);
+            JToken token = await GetAsync($"device({id})", cancellationToken);
+            var devices = token.ToDataObjectArray<ResinDevice>(this);
+            return devices.Any() ? devices.First() : null;
         }
 
         /// <summary>
@@ -427,6 +450,11 @@ namespace Resin.Api.Client
         public Task DeleteDeviceEnvironmentVariableAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
             return DeleteAsync($"device_environment_variable({id})", cancellationToken);
+        }
+
+        public Task DeleteApplicationEnvironmentVariableAsync(int id, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return DeleteAsync($"environment_variable({id})", cancellationToken);
         }
 
         /// <summary>
