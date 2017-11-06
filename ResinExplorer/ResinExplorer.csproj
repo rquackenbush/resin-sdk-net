@@ -110,7 +110,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ApplicationContainerFactory.cs" />
-    <Compile Include="Converters\IntToBoolCoverter.cs" />
     <Compile Include="Core\DpApi.cs" />
     <Compile Include="Core\GenericEnvironmentVariable.cs" />
     <Compile Include="Core\UserSettings.cs" />

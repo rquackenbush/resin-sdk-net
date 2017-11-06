@@ -7,14 +7,11 @@
         xmlns:viewModel="clr-namespace:ResinExplorer.ViewModel"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:Cas.Common.WPF.Behaviors;assembly=Cas.Common.WPF"
-        xmlns:converters="clr-namespace:ResinExplorer.Converters"
         mc:Ignorable="d"
-        Title="Edit Variables" Height="300" Width="300">
+        d:DataContext="{d:DesignInstance viewModel:EditVariablesBaseViewModel}"
+        Title="Edit Variables" Height="300" Width="600">
     
-    <Window.Resources>
-        <converters:IntToBoolCoverter x:Key="converter"/>
-    </Window.Resources>
-    
+  
     <i:Interaction.Behaviors>
         <behaviors:CloseableBehavior/>
     </i:Interaction.Behaviors>
@@ -33,38 +30,24 @@
                   SelectedItem="{Binding SelectedVariable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
 
 
-            <DataGrid.Resources>
-                <Style TargetType="{x:Type TextBlock}" x:Key="myStyle">
-                    <Setter Property="IsEnabled" Value="{Binding Path=Id, Converter={StaticResource converter}}"/>
-                </Style>
-            </DataGrid.Resources>
-            
             <DataGrid.Columns>
 
-                <!--<DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Name" Width="200">
+                    
                     <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" MinWidth="100" IsEnabled="{Binding Path=Id, Converter={StaticResource converter}}" />
+                        <DataTemplate DataType="viewModel:EnvironmentVariableViewModel">
+                            <TextBlock Text="{Binding Path=Name}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>-->
+                    
+                     <DataGridTemplateColumn.CellEditingTemplate>
+                         <DataTemplate DataType="viewModel:EnvironmentVariableViewModel">
+                             <TextBox Text="{Binding Path=Name}" IsEnabled="{Binding Path=CanEdit}" BorderThickness="0"/>
+                         </DataTemplate>
+                     </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}"  MinWidth="100" ElementStyle="{StaticResource myStyle}">
-                    
-                    
-                    <!--<DataGridTextColumn.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Id}" Value="0">
-                                    <Setter Property="IsEnabled" Value="True"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                            <Setter Property="IsEnabled" Value="{Binding Path=Id, Converter={StaticResource converter}}"/>
-                        </Style>
-                    </DataGridTextColumn.CellStyle>-->                    
-                </DataGridTextColumn>
-                
-                <DataGridTextColumn Header="Value" Binding="{Binding Value}" MinWidth="150"/>                
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" MinWidth="200"/>                
             </DataGrid.Columns>
         </DataGrid>
 

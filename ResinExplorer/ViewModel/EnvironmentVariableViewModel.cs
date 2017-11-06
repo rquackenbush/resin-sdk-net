@@ -8,8 +8,8 @@ namespace ResinExplorer.ViewModel
 {
     public class EnvironmentVariableViewModel : ViewModelBase
     {
-        private GenericEnvironmentVariable _model;
-        private IDirtyService _dirtyService = new DirtyService();
+        private readonly GenericEnvironmentVariable _model;
+        private readonly IDirtyService _dirtyService = new DirtyService();
         public IDirtyService DirtyService => _dirtyService;
 
         public EnvironmentVariableViewModel(GenericEnvironmentVariable model)
@@ -21,7 +21,12 @@ namespace ResinExplorer.ViewModel
         public int Id
         {
             get { return _model.Id; }
-            set { _model.Id = value; RaisePropertyChanged(); }
+            set
+            {
+                _model.Id = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(() => CanEdit);
+            }
         }
 
         public string Value
@@ -44,6 +49,11 @@ namespace ResinExplorer.ViewModel
                 RaisePropertyChanged();
                 _dirtyService.MarkDirty();
             }
+        }
+
+        public bool CanEdit
+        {
+            get { return Id == 0; }
         }
 
 

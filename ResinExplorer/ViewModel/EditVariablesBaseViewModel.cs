@@ -18,6 +18,9 @@ namespace ResinExplorer.ViewModel
     public abstract class EditVariablesBaseViewModel : ViewModelBase, ICloseableViewModel
     {
 
+        private EnvironmentVariableViewModel _selectedVariable;
+        private ObservableCollection<EnvironmentVariableViewModel> _variables = new ObservableCollection<EnvironmentVariableViewModel>();
+
         public event EventHandler<CloseEventArgs> Close;
 
         public IDirtyService DirtyService => _dirtyService;
@@ -28,9 +31,9 @@ namespace ResinExplorer.ViewModel
 
         protected List<int> VariablesForDelete = new List<int>();
         protected readonly ResinApiClient Client;
-        private IDirtyService _dirtyService = new DirtyService();
+        private readonly IDirtyService _dirtyService = new DirtyService();
 
-        public EditVariablesBaseViewModel(ResinApiClient client, IEnumerable<GenericEnvironmentVariable> variables)
+        protected EditVariablesBaseViewModel(ResinApiClient client, IEnumerable<GenericEnvironmentVariable> variables)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
             Variables.AddRange(variables.Select(v => new EnvironmentVariableViewModel(v)));
@@ -135,19 +138,24 @@ namespace ResinExplorer.ViewModel
         {
         }
 
-        private EnvironmentVariableViewModel _selectedVariable = null;
         public EnvironmentVariableViewModel SelectedVariable
         {
             get { return _selectedVariable; }
-            set { _selectedVariable = value; RaisePropertyChanged(); }
+            set
+            {
+                _selectedVariable = value;
+                RaisePropertyChanged();
+            }
         }
-
-
-        private ObservableCollection<EnvironmentVariableViewModel> _variables = new ObservableCollection<EnvironmentVariableViewModel>();
+        
         public ObservableCollection<EnvironmentVariableViewModel> Variables
         {
             get { return _variables; }
-            set { _variables = value; RaisePropertyChanged(); }
+            set
+            {
+                _variables = value;
+                RaisePropertyChanged();
+            }
         }
 
     }
