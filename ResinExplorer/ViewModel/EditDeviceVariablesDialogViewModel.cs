@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 
 namespace ResinExplorer.ViewModel
 {
-    public class EditApplicationVariablesDialogViewModel : EditVariablesBaseViewModel
+    public class EditDeviceVariablesDialogViewModel : EditVariablesBaseViewModel
     {
-        private int _applicationId;
+        private int _deviceId;
 
-        public EditApplicationVariablesDialogViewModel(ResinApiClient client, int applicationId, IEnumerable<EnvironmentVariable> variables)
+        public EditDeviceVariablesDialogViewModel(ResinApiClient client, int deviceId, IEnumerable<EnvironmentVariable> variables)
             : base(client, variables.Select(v => new GenericEnvironmentVariable { Id = v.Id, Name = v.Name, Value = v.Value }))
         {
-            _applicationId = applicationId;
+            _deviceId = deviceId;
         }
 
         protected override IEnumerable<Task> AddVariablesAsync(Dictionary<string, string> variables)
         {
-            return Client.CreateApplicationVariableAsync(_applicationId, variables);
+            return Client.CreateDeviceEnvironmentVariableAsync(_deviceId, variables);
         }
     }
 }

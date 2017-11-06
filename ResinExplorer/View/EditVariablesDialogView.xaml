@@ -7,9 +7,14 @@
         xmlns:viewModel="clr-namespace:ResinExplorer.ViewModel"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:Cas.Common.WPF.Behaviors;assembly=Cas.Common.WPF"
+        xmlns:converters="clr-namespace:ResinExplorer.Converters"
         mc:Ignorable="d"
         Title="Edit Variables" Height="300" Width="300">
-
+    
+    <Window.Resources>
+        <converters:IntToBoolCoverter x:Key="converter"/>
+    </Window.Resources>
+    
     <i:Interaction.Behaviors>
         <behaviors:CloseableBehavior/>
     </i:Interaction.Behaviors>
@@ -24,30 +29,55 @@
             <Button Content="Add" Command="{Binding AddVariableCommand}"/>
             <Button Content="Delete" Command="{Binding RemoveVariableCommand}"/>
         </ToolBar>
-        <DataGrid Grid.Row="1" SelectedItem="{Binding SelectedVariable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
-            <DataGridTemplateColumn Header="Abc">
-                <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="cde1"/>
-                            <TextBlock Text="{Binding Variables.Id}"/>
-                            <TextBlock Text="{Binding Variables.Value}"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-            </DataGridTemplateColumn>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Variables}" AutoGenerateColumns="False"
+                  SelectedItem="{Binding SelectedVariable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+
+
+            <DataGrid.Resources>
+                <Style TargetType="{x:Type TextBlock}" x:Key="myStyle">
+                    <Setter Property="IsEnabled" Value="{Binding Path=Id, Converter={StaticResource converter}}"/>
+                </Style>
+            </DataGrid.Resources>
+            
+            <DataGrid.Columns>
+
+                <!--<DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" MinWidth="100" IsEnabled="{Binding Path=Id, Converter={StaticResource converter}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>-->
+
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}"  MinWidth="100" ElementStyle="{StaticResource myStyle}">
+                    
+                    
+                    <!--<DataGridTextColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Id}" Value="0">
+                                    <Setter Property="IsEnabled" Value="True"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                            <Setter Property="IsEnabled" Value="{Binding Path=Id, Converter={StaticResource converter}}"/>
+                        </Style>
+                    </DataGridTextColumn.CellStyle>-->                    
+                </DataGridTextColumn>
+                
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" MinWidth="150"/>                
+            </DataGrid.Columns>
         </DataGrid>
 
         <StackPanel Grid.Row="2" HorizontalAlignment="Right" Orientation="Horizontal">
             <StackPanel.Resources>
                 <Style TargetType="Button">
                     <Setter Property="Margin" Value="4"/>
-                    <Setter Property="MinWidth" Value="60"></Setter>
+                    <Setter Property="MinWidth" Value="60"/>
                 </Style>
             </StackPanel.Resources>
 
-            <Button Command="{Binding Path=OkCommand}" IsDefault="True">_OK</Button>
-            <Button IsCancel="True">_Cancel</Button>
+            <Button Command="{Binding Path=OkCommand}" IsDefault="True" Content="_OK"/>
+            <Button IsCancel="True" Content="_Cancel"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -19,14 +19,19 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Label Grid.Row="1" Grid.Column="0" Content="Application:"/>
-        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Applications}" SelectedItem="{Binding SelectedApplication}" DisplayMemberPath="Name"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Applications}" SelectedItem="{Binding SelectedApplication}" DisplayMemberPath="Name" MinWidth="200"/>
 
-        <StackPanel Grid.Row="3" HorizontalAlignment="Right" Orientation="Horizontal" Grid.ColumnSpan="2">
+        <Label Grid.Row="2" Grid.Column="0" Content="Name:"/>
+        <TextBox Grid.Row="2" Grid.Column="1" MinWidth="200" Text="{Binding Name}"/>
+
+        <StackPanel Grid.Row="5" HorizontalAlignment="Right" Orientation="Horizontal" Grid.ColumnSpan="2">
             <StackPanel.Resources>
                 <Style TargetType="Button">
                     <Setter Property="Margin" Value="4"/>

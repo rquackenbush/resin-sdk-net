@@ -110,13 +110,17 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ApplicationContainerFactory.cs" />
+    <Compile Include="Converters\IntToBoolCoverter.cs" />
     <Compile Include="Core\DpApi.cs" />
+    <Compile Include="Core\GenericEnvironmentVariable.cs" />
     <Compile Include="Core\UserSettings.cs" />
     <Compile Include="Interfaces\ISettings.cs" />
     <Compile Include="ViewModel\ApplicationViewModel.cs" />
     <Compile Include="ViewModel\CreateApplicationDialogViewModel.cs" />
     <Compile Include="ViewModel\CreateDeviceDialogViewModel.cs" />
     <Compile Include="ViewModel\DeviceViewModel.cs" />
+    <Compile Include="ViewModel\EditDeviceVariablesDialogViewModel.cs" />
+    <Compile Include="ViewModel\EditVariablesBaseViewModel.cs" />
     <Compile Include="ViewModel\EditVariablesDialogViewModel.cs" />
     <Compile Include="ViewModel\EnvironmentVariableViewModel.cs" />
     <Compile Include="ViewModel\LogonDialogViewModel.cs" />

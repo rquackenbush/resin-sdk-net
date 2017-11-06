@@ -4,6 +4,14 @@
     <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.0|AnyCPU'">
+    <DocumentationFile>bin\Release\netcoreapp2.0\Resin.Api.Client.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.0|AnyCPU'">
+    <DocumentationFile></DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="CaptiveAire.Wpf.Dialogs" Version="1.0.3" />
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />

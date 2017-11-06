@@ -170,7 +170,7 @@ namespace Resin.Api.Client
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected internal async Task PatchAsync(
+        protected internal async Task<HttpResponseMessage> PatchAsync(
             string requestUri,
             object request,
             CancellationToken cancellationToken = new CancellationToken())
@@ -191,7 +191,7 @@ namespace Resin.Api.Client
                 };
 
                 //Send it!
-                await client.SendAsync(requestMessage, cancellationToken);
+                return await client.SendAsync(requestMessage, cancellationToken);
             }
         }
     }

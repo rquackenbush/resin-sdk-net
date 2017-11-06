@@ -14,6 +14,13 @@ namespace ResinExplorer.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
+
+        public ICommand RefreshCommand { get; private set; }
+        public ICommand CreateApplicationCommand { get; private set; }
+        public ICommand DeleteApplicationCommand { get; private set; }
+        public ICommand CreateDeviceCommand { get; private set; }
+        public ICommand DeleteDeviceCommand { get; private set; }
+
         private readonly IViewService _viewService;
         private readonly ResinApiClient _client;
         private bool _isBusy;
@@ -41,18 +48,15 @@ namespace ResinExplorer.ViewModel
             DeleteApplicationCommand = new RelayCommand(DeleteApplication, CanDelete);
             CreateDeviceCommand = new RelayCommand(CreateDevice);
             DeleteDeviceCommand = new RelayCommand(DeleteDevice, CanDeleteDevice);
-            EditApplicationNameCommand = new RelayCommand(EditApplicationName);
-        }
-
-        private void EditApplicationName()
-        {
-            //_textEditService.EditText()
         }
 
         private async void DeleteDevice()
         {
-            await _client.DeleteDeviceAsync(SelectedDevice.Id);
-            Devices.Remove(SelectedDevice);
+            if (MessageBox.Show("Are you sure?", "Delete device", MessageBoxButton.YesNo) == MessageBoxResult.OK)
+            {
+                await _client.DeleteDeviceAsync(SelectedDevice.Id);
+                Devices.Remove(SelectedDevice);
+            }
         }
 
         private bool CanDeleteDevice()
@@ -67,8 +71,9 @@ namespace ResinExplorer.ViewModel
             if (_viewService.ShowDialog(viewModel) == true)
             {
                 var deviceResult = await _client.RegisterDeviceAsync(viewModel.SelectedApplication.Id, Guid.NewGuid().ToString("N"));
+                await _client.RenameDeviceAsync(deviceResult.Id, viewModel.Name);
                 var newDevice = await _client.GetDeviceAsync(deviceResult.Id);
-                Devices.Add(new DeviceViewModel(newDevice, _textEditService, _client));
+                Devices.Add(new DeviceViewModel(newDevice, _textEditService, _client, _viewService));
             }
         }
 
@@ -87,8 +92,11 @@ namespace ResinExplorer.ViewModel
         {
             try
             {
-                await _client.DeleteApplicationAsync(SelectedApplication.Id);
-                Applications.Remove(SelectedApplication);
+                if (MessageBox.Show("Are you sure?", "Application Delete", MessageBoxButton.YesNo) == MessageBoxResult.OK)
+                {
+                    await _client.DeleteApplicationAsync(SelectedApplication.Id);
+                    Applications.Remove(SelectedApplication);
+                }
             }
             catch (Exception ex)
             {
@@ -114,14 +122,6 @@ namespace ResinExplorer.ViewModel
                 MessageBox.Show(ex.Message, ex.Source);
             }
         }
-
-
-        public ICommand RefreshCommand { get; private set; }
-        public ICommand CreateApplicationCommand { get; private set; }
-        public ICommand DeleteApplicationCommand { get; private set; }
-        public ICommand CreateDeviceCommand { get; private set; }
-        public ICommand DeleteDeviceCommand { get; private set; }
-        public ICommand EditApplicationNameCommand { get; private set; }
 
         private CancellationTokenSource CreateCancellationTokenSource(double timeoutSeconds = 30)
         {
@@ -164,7 +164,7 @@ namespace ResinExplorer.ViewModel
 
                 ResinDevice[] devices = await _client.GetDevicesAsync(cts.Token);
 
-                Devices = new ObservableCollection<DeviceViewModel>(devices.Select(d => new DeviceViewModel(d, _textEditService, _client)).OrderBy(d => d.Name));
+                Devices = new ObservableCollection<DeviceViewModel>(devices.Select(d => new DeviceViewModel(d, _textEditService, _client, _viewService)).OrderBy(d => d.Name));
 
             }
             catch (Exception ex)

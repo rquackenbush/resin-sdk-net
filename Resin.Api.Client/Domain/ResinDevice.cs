@@ -7,13 +7,13 @@ namespace Resin.Api.Client.Domain
     {
         private DeferrableProperty<ResinApplication> _application;
         private DeferrableProperty<ResinUser> _user;
-        private DeferrableProperty<ServiceInstance> _serviceInstance;
+        // private DeferrableProperty<ServiceInstance> _serviceInstance;
 
         protected override void Initialize()
         {
             _application = new DeferrableProperty<ResinApplication>(Client, Token["application"]);
             _user = new DeferrableProperty<ResinUser>(Client, Token["user"]);
-            _serviceInstance = new DeferrableProperty<ServiceInstance>(Client, Token["service_instance"]);
+            //_serviceInstance = new DeferrableProperty<ServiceInstance>(Client, Token["service_instance"]);
         }
 
         public DateTime CreatedAt => GetValue<DateTime>("created_at");
@@ -86,14 +86,14 @@ namespace Resin.Api.Client.Domain
             }
         }
 
-        public IDeferrableProperty<ServiceInstance> ServiceInstance
-        {
-            get
-            {
-                CheckInitialized();
-                return _serviceInstance;
-            }
-        }
+        //public IDeferrableProperty<ServiceInstance> ServiceInstance
+        //{
+        //    get
+        //    {
+        //        CheckInitialized();
+        //        return _serviceInstance;
+        //    }
+        //}
 
         public DateTime? LockExpiryDate => GetValue<DateTime?>("lock_expiry_date");
 

@@ -1,34 +1,53 @@
-﻿using GalaSoft.MvvmLight;
-using Resin.Api.Client.Domain;
+﻿using Cas.Common.WPF;
+using Cas.Common.WPF.Interfaces;
+using GalaSoft.MvvmLight;
+using ResinExplorer.Core;
 using System;
 
 namespace ResinExplorer.ViewModel
 {
     public class EnvironmentVariableViewModel : ViewModelBase
     {
-        private EnvironmentVariable _model;
+        private GenericEnvironmentVariable _model;
+        private IDirtyService _dirtyService = new DirtyService();
+        public IDirtyService DirtyService => _dirtyService;
 
-        public EnvironmentVariableViewModel(EnvironmentVariable model)
+        public EnvironmentVariableViewModel(GenericEnvironmentVariable model)
         {
             _model = model ?? throw new ArgumentNullException(nameof(model));
+            _dirtyService.MarkClean();
         }
 
-        private int _id;
         public int Id
         {
-            get { return _id; }
-            set { _id = value; RaisePropertyChanged(); }
+            get { return _model.Id; }
+            set { _model.Id = value; RaisePropertyChanged(); }
         }
 
-        private string _value;
         public string Value
         {
-            get { return _value; }
-            set { _value = value; RaisePropertyChanged(); }
+            get { return _model.Value; }
+            set
+            {
+                _model.Value = value;
+                RaisePropertyChanged();
+                _dirtyService.MarkDirty();
+            }
+        }
+
+        public string Name
+        {
+            get { return _model.Name; }
+            set
+            {
+                _model.Name = value;
+                RaisePropertyChanged();
+                _dirtyService.MarkDirty();
+            }
         }
 
 
-        public EnvironmentVariable GetModel()
+        public GenericEnvironmentVariable GetModel()
         {
             // TODO Clone
             return _model;

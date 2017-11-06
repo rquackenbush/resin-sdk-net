@@ -12,53 +12,7 @@
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding Path=RefreshCommand}"/>
     </Window.InputBindings>
-    
-    <Window.Resources>
-        
-        <DataTemplate x:Key="ApplicationDataTemplate" DataType="viewModel:ApplicationViewModel">
-            <StackPanel Orientation="Horizontal">
-                <Button Command="{Binding EditNameCommand}" ToolTip="Edit name">
-                    <Button.Template>
-                        <ControlTemplate>
-                            <Image Source="/ResinExplorer;component/images/Edit_16x16.png"/>   
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>                
-                <TextBlock Text="{Binding Path=Name}" MinWidth="100"/>
-                <Button Content="Edit Variables" Command="{Binding EditVariablesCommand}"/>
-                <TextBlock Text="{Binding Path=DeviceType}" MinWidth="100"/>
-                <TextBlock Text="{Binding Path=Id}" MinWidth="100"/>
-                <TextBlock Text="{Binding Path=CommitReference}" MinWidth="100"/>
-            </StackPanel>            
-        </DataTemplate>
-
-        <DataTemplate x:Key="DeviceDataTemplate" DataType="viewModel:DeviceViewModel">
-            <StackPanel Orientation="Horizontal">
-                <StackPanel.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Edit note.." Command="{Binding EditNoteCommand}"/>
-                        <MenuItem Header="Edit name.." Command="{Binding EditNameCommand}"/>
-                    </ContextMenu>
-                </StackPanel.ContextMenu>
-                
-                <Button Command="{Binding EditNameCommand}" ToolTip="Edit name">
-                    <Button.Template>
-                        <ControlTemplate>
-                            <Image Source="/ResinExplorer;component/images/Edit_16x16.png"/>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <TextBlock Text="{Binding Path=Name}" MinWidth="100"/>
-                <TextBlock Text="{Binding Path=DeviceType}" MinWidth="100"/>
-                <TextBlock Text="{Binding Path=Id}" MinWidth="100"/>
-                <TextBlock Text="{Binding Path=CommitReference}" MinWidth="100"/>
-            </StackPanel>
-        </DataTemplate>
-
-        
-
-    </Window.Resources>
-    
+   
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -70,10 +24,10 @@
                 <MenuItem Header="E_xit"></MenuItem>
             </MenuItem>
             <MenuItem Header="_View">
-                <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=RefreshCommand}"></MenuItem>
+                <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=RefreshCommand}"/>
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="_About"></MenuItem>
+                <MenuItem Header="_About"/>
             </MenuItem>
         </Menu>
 
@@ -96,8 +50,30 @@
                         <Button Content="Delete" Command="{Binding DeleteApplicationCommand}"/>
                     </ToolBar>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Path=Applications}" ItemTemplate="{StaticResource ApplicationDataTemplate}" 
-                             SelectedItem="{Binding SelectedApplication, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Applications}" AutoGenerateColumns="False" IsReadOnly="True"
+                              SelectedItem="{Binding SelectedApplication, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" >
+                        <DataGrid.Resources>
+                            <ContextMenu x:Key="DgContextMenu">
+                                <MenuItem Header="Edit variables.." Command="{Binding EditVariablesCommand}"/>
+                            </ContextMenu>
+                        </DataGrid.Resources>
+
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="ContextMenu" Value="{StaticResource DgContextMenu}"/>
+                            </Style>
+                        </DataGrid.RowStyle>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="Device Type" Binding="{Binding DeviceType}"/>
+                            <DataGridTextColumn Header="Id" Binding="{Binding Id}"/>
+                            <DataGridTextColumn Header="Commit Reference" Binding="{Binding CommitReference}"/>
+                        </DataGrid.Columns>
+
+                        
+                    </DataGrid>
+                    
                 </Grid>
             </GroupBox>
 
@@ -115,8 +91,55 @@
                         <Button Content="Delete" Command="{Binding DeleteDeviceCommand}"/>
                     </ToolBar>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Path=Devices}" ItemTemplate="{StaticResource DeviceDataTemplate}"
-                             SelectedItem="{Binding SelectedDevice, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                              IsReadOnly="True" AutoGenerateColumns="False">
+
+                        <DataGrid.Resources>
+                            <ContextMenu x:Key="DeviceContextMenu">
+                                <MenuItem Header="Edit note.." Command="{Binding EditNoteCommand}"/>
+                                <MenuItem Header="Edit name.." Command="{Binding EditNameCommand}"/>
+                                <MenuItem Header="Edit variables.." Command="{Binding EditVariablesCommand}"/>
+                                <Separator />
+                                <MenuItem Header="Blink.." Command="{Binding BlinkCommand}"/>
+                                <MenuItem Header="Reboot.." Command="{Binding RebootCommand}"/>
+                                <MenuItem Header="Shutdown.." Command="{Binding ShutdownCommand}"/>
+                                <MenuItem Header="Restart.." Command="{Binding RestartCommand}"/>
+                            </ContextMenu>
+                        </DataGrid.Resources>
+
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="ContextMenu" Value="{StaticResource DeviceContextMenu}"/>
+                            </Style>
+                        </DataGrid.RowStyle>
+
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Command="{Binding EditNameCommand}" ToolTip="Edit name">
+                                            <Button.Template>
+                                                <ControlTemplate>
+                                                    <Image Source="/ResinExplorer;component/images/Edit_16x16.png"/>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="Device Type" Binding="{Binding DeviceType}"/>
+                            <DataGridTextColumn Header="Id" Binding="{Binding Id}"/>
+                            <DataGridTextColumn Header="Commit Reference" Binding="{Binding CommitReference}"/>
+                        </DataGrid.Columns>
+                        
+                        
+                        
+                    </DataGrid>
+                    
+                    
+                    
                 </Grid>
             </GroupBox>
 

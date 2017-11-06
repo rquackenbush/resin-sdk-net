@@ -3,6 +3,7 @@ using Resin.Api.Client.Domain;
 using Resin.Api.Client.Exceptions;
 using Resin.Api.Client.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -175,22 +176,30 @@ namespace Resin.Api.Client
             return token.ToDataObjectDirect<ResinApplication>(this);
         }
 
-        public async Task<ResinApplication> CreateApplicationVariableAsync(
-            int id,
+        public IEnumerable<Task<EnvironmentVariable>> CreateApplicationVariableAsync(
+            int applicationId,
+            Dictionary<string, string> keyValuePairs,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            return keyValuePairs.Select(v => CreateApplicationVariableAsync(applicationId, v.Key, v.Value));
+        }
+
+        public async Task<EnvironmentVariable> CreateApplicationVariableAsync(
+            int applicationId,
             string name,
             string value,
             CancellationToken cancellationToken = new CancellationToken())
         {
             var data = new
             {
-                application = id,
+                application = applicationId,
                 name = name,
                 value = value
             };
 
             JToken token = await PostAsync("environment_variable", data, cancellationToken);
 
-            return token.ToDataObjectDirect<ResinApplication>(this);
+            return token.ToDataObjectDirect<ApplicationEnvironmentVariable>(this);
         }
 
         /// <summary>
@@ -199,8 +208,7 @@ namespace Resin.Api.Client
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task DeleteApplicationAsync(int id,
-            CancellationToken cancellationToken = new CancellationToken())
+        public Task DeleteApplicationAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
             return DeleteAsync($"application({id})", cancellationToken);
         }
@@ -407,54 +415,40 @@ namespace Resin.Api.Client
             return PostAsync("device_environment_variable", data, cancellationToken);
         }
 
-        /// <summary>
-        /// Update a device environment variable with a new value, given the ID of the variable
-        /// https://docs.resin.io/runtime/data-api/#update-device-variable
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="value"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task UpdateDeviceEnvironmentVariable(int id, string value, CancellationToken cancellationToken = new CancellationToken())
+        public IEnumerable<Task> CreateDeviceEnvironmentVariableAsync(int deviceId, Dictionary<string, string> nameValuePairs, CancellationToken cancellationToken = new CancellationToken())
         {
-            var data = new
-            {
-                value
-            };
-
-            return PatchAsync($"device_environment_variable({id})", data, cancellationToken);
+            return nameValuePairs.Select(v => CreateDeviceEnvironmentVariableAsync(deviceId, v.Key, v.Value, cancellationToken));
         }
 
+
         /// <summary>
-        /// Update an application environment variable with a new value, given the ID of the variable
+        /// Update an environment variable with a new value, given the ID of the variable
         /// </summary>
         /// <param name="id"></param>
         /// <param name="name">Application variable name</param>
         /// <param name="newValue"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task UpdateApplicationVariableAsync(int id, string name, string newValue, CancellationToken cancellationToken = new CancellationToken())
+        public Task<HttpResponseMessage> UpdateEnvironmentVariableAsync(int environmentVariableId, string newValue, CancellationToken cancellationToken = new CancellationToken())
         {
-            var data = new { name = newValue };
+            var data = new { value = newValue };
 
-            return PatchAsync($"environment_variable({id})", data, cancellationToken);
+            return PatchAsync($"environment_variable({environmentVariableId})", data, cancellationToken);
         }
 
-        /// <summary>
-        /// Remove a device environment variable with a specified ID
-        /// https://docs.resin.io/runtime/data-api/#delete-device-variable
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task DeleteDeviceEnvironmentVariableAsync(int id, CancellationToken cancellationToken = new CancellationToken())
+        public IEnumerable<Task<HttpResponseMessage>> UpdateEnvironmentVariableAsync(Dictionary<int, string> idValuePairs, CancellationToken cancellationToken = new CancellationToken())
         {
-            return DeleteAsync($"device_environment_variable({id})", cancellationToken);
+            return idValuePairs.Select(v => UpdateEnvironmentVariableAsync(v.Key, v.Value, cancellationToken));
         }
 
-        public Task DeleteApplicationEnvironmentVariableAsync(int id, CancellationToken cancellationToken = new CancellationToken())
+        public Task DeleteEnvironmentVariableAsync(int id, CancellationToken cancellationToken = new CancellationToken())
         {
             return DeleteAsync($"environment_variable({id})", cancellationToken);
+        }
+
+        public IEnumerable<Task> DeleteEnvironmentVariableAsync(IEnumerable<int> ids, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return ids.Select(id => DeleteEnvironmentVariableAsync(id));
         }
 
         /// <summary>
@@ -469,19 +463,20 @@ namespace Resin.Api.Client
             return DeviceCommandAsync(deviceId, "blink", cancellationToken);
         }
 
-        public Task RenameDeviceAsync(int deviceId, string newName, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<HttpResponseMessage> RenameDeviceAsync(int deviceId, string newName, CancellationToken cancellationToken = new CancellationToken())
         {
             var data = new { name = newName };
 
-            return PatchAsync($"device({deviceId})", data, cancellationToken);
+            return await PatchAsync($"device({deviceId})", data, cancellationToken);
         }
 
-        public Task RenameApplicationAsync(int deviceId, string newName, CancellationToken cancellationToken = new CancellationToken())
-        {
-            var data = new { name = newName };
+        // Does not work
+        //public async Task<HttpResponseMessage> RenameApplicationAsync(int applicationId, string newName, CancellationToken cancellationToken = new CancellationToken())
+        //{
+        //    var data = new { name = newName };
 
-            return PatchAsync($"application({deviceId})", data, cancellationToken);
-        }
+        //    return await PatchAsync($"application({applicationId})", data, cancellationToken);
+        //}
 
         /// <summary>
         /// Restarts the application container on a given device. 

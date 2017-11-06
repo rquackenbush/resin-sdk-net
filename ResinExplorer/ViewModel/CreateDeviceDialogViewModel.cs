@@ -9,17 +9,22 @@ namespace ResinExplorer.ViewModel
 {
     public class CreateDeviceDialogViewModel : ViewModelBase, ICloseableViewModel
     {
+        public event EventHandler<CloseEventArgs> Close;
+        public ICommand OkCommand { get; private set; }
+        public IEnumerable<ApplicationViewModel> Applications { get; private set; }
+
         public CreateDeviceDialogViewModel(IEnumerable<ApplicationViewModel> applications)
         {
             Applications = applications;
             OkCommand = new RelayCommand(Ok, CanOk);
         }
 
-        public ICommand OkCommand { get; private set; }
-
-        public IEnumerable<ApplicationViewModel> Applications { get; private set; }
-
-        public event EventHandler<CloseEventArgs> Close;
+        private string _name;
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; RaisePropertyChanged(); }
+        }
 
         private ApplicationViewModel _selectedApplication = null;
         public ApplicationViewModel SelectedApplication
