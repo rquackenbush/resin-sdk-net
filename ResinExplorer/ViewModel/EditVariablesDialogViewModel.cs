@@ -9,6 +9,7 @@ namespace ResinExplorer.ViewModel
 {
     public class EditApplicationVariablesDialogViewModel : EditVariablesBaseViewModel
     {
+        // Application id
         private int _applicationId;
 
         public EditApplicationVariablesDialogViewModel(ResinApiClient client, int applicationId, IEnumerable<EnvironmentVariable> variables)
