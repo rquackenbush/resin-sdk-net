@@ -8,6 +8,8 @@ using System.Windows;
 
 namespace ResinExplorer
 {
+    using Resin.Api.Client.Interfaces;
+
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -52,14 +54,20 @@ namespace ResinExplorer
                                 settings.Token = newToken;
                             }
 
-                            //Create a new client
-                            var client = new ResinApiClient(new SimpleTokenProvider(newToken), logonViewModel.ApiAddress);
+                            using (var childScope = container.BeginLifetimeScope(builder =>
+                                {
+                                    builder.RegisterInstance(tokenProvider).As<ITokenProvider>();
+                                }))
+                            {
+                                //Create a new client
+                                var client = new ResinApiClient(new SimpleTokenProvider(newToken), logonViewModel.ApiAddress);
 
-                            //Create the view model
-                            var mainViewModel = container.Resolve<MainViewModel>(new TypedParameter(typeof(ResinApiClient), client));
+                                //Create the view model
+                                var mainViewModel = childScope.Resolve<MainViewModel>(new TypedParameter(typeof(ResinApiClient), client));
 
-                            //Finally - we can start up the real thing!
-                            viewService.ShowDialog(mainViewModel);
+                                //Finally - we can start up the real thing!
+                                viewService.ShowDialog(mainViewModel);
+                            }
 
                             return;
                         }

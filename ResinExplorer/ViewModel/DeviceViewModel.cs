@@ -10,6 +10,10 @@ using System.Windows.Input;
 
 namespace ResinExplorer.ViewModel
 {
+    using System.Threading;
+    using Resin.Api.Client.Interfaces;
+    using Resin.SupervisorApi.Client;
+
     public class DeviceViewModel : ViewModelBase
     {
         public ICommand EditNameCommand { get; private set; }
@@ -21,13 +25,15 @@ namespace ResinExplorer.ViewModel
         public ICommand ShutdownCommand { get; private set; }
 
 
+        private readonly ITokenProvider _tokenProvider;
         private ResinDevice _model;
         private readonly ITextEditService _textEditService;
         private readonly ResinApiClient _client;
         private readonly IViewService _viewService;
 
-        public DeviceViewModel(ResinDevice model, ITextEditService textEditService, ResinApiClient client, IViewService viewService)
+        public DeviceViewModel(ITokenProvider tokenProvider, ResinDevice model, ITextEditService textEditService, ResinApiClient client, IViewService viewService)
         {
+            _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
             _model = model ?? throw new ArgumentNullException(nameof(model));
             _textEditService = textEditService ?? throw new ArgumentNullException(nameof(textEditService));
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -48,7 +54,11 @@ namespace ResinExplorer.ViewModel
 
         private async void Blink()
         {
-            await _client.BlinkDeviceAsync(Id);
+            var client = new ProxySupervisorClient(_model.Uuid, await _tokenProvider.GetTokenAsync(CancellationToken.None));
+
+            await client.BlinkAsync();
+
+            //await _client.BlinkDeviceAsync(Id);
         }
 
         private async void Shutdown()

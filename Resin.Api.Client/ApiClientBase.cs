@@ -79,7 +79,6 @@ namespace Resin.Api.Client
         /// <summary>
         /// Perform a get and return a deserialized response.
         /// </summary>
-        /// <typeparam name="TResponse"></typeparam>
         /// <param name="requestUri"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

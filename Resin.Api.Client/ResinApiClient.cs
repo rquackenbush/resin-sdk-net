@@ -424,8 +424,7 @@ namespace Resin.Api.Client
         /// <summary>
         /// Update an environment variable with a new value, given the ID of the variable
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="name">Application variable name</param>
+        /// <param name="environmentVariableId"></param>
         /// <param name="newValue"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
