@@ -10,13 +10,14 @@
     using Microsoft.AspNetCore.WebUtilities;
     using Newtonsoft.Json;
 
-    public class ProxySupervisorClient : SupervisorClient 
+    internal class ProxySupervisorClient : SupervisorClient 
     {
         private readonly string _baseUrl;
         private readonly string _uuid;
         private readonly string _token;
 
-        public ProxySupervisorClient(string uuid, string token, string baseUrl = "https://api.resin.io/supervisor")
+        public ProxySupervisorClient(HttpClient httpClient, string uuid, string token, string baseUrl = "https://api.resin.io/supervisor") 
+            : base(httpClient)
         {
             _baseUrl = baseUrl;
             _uuid = uuid;

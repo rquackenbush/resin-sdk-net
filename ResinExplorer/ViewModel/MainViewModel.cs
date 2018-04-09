@@ -12,6 +12,7 @@ using System.Windows.Input;
 
 namespace ResinExplorer.ViewModel
 {
+    using Autofac;
     using Resin.Api.Client.Interfaces;
 
     public class MainViewModel : ViewModelBase
@@ -30,12 +31,16 @@ namespace ResinExplorer.ViewModel
         private ObservableCollection<DeviceViewModel> _devices;
         private ApplicationViewModel _selectedApplication;
         private DeviceViewModel _selectedDevice;
-        private readonly ITokenProvider _tokenProvider;
-        private ITextEditService _textEditService;
+        private readonly ILifetimeScope _lifetimeScope;
+        private readonly ITextEditService _textEditService;
 
-        public MainViewModel(ITokenProvider tokenProvider, IViewService viewService, ResinApiClient client, ITextEditService textEditService)
+        public MainViewModel(
+            ILifetimeScope lifetimeScope, 
+            IViewService viewService, 
+            ResinApiClient client, 
+            ITextEditService textEditService)
         {
-            _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
+            _lifetimeScope = lifetimeScope;
             _textEditService = textEditService ?? throw new ArgumentNullException(nameof(textEditService));
             _viewService = viewService ?? throw new ArgumentNullException(nameof(viewService));
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -77,8 +82,15 @@ namespace ResinExplorer.ViewModel
                 var deviceResult = await _client.RegisterDeviceAsync(viewModel.SelectedApplication.Id, Guid.NewGuid().ToString("N"));
                 await _client.RenameDeviceAsync(deviceResult.Id, viewModel.Name);
                 var newDevice = await _client.GetDeviceAsync(deviceResult.Id);
-                Devices.Add(new DeviceViewModel(_tokenProvider, newDevice, _textEditService, _client, _viewService));
+                Devices.Add(CreateDeviceViewModel(newDevice));
             }
+        }
+
+        private DeviceViewModel CreateDeviceViewModel(ResinDevice device)
+        {
+            return _lifetimeScope.Resolve<DeviceViewModel>(
+                new TypedParameter(typeof(ResinDevice), device),
+                new TypedParameter(typeof(ResinApiClient), _client));
         }
 
         private void Refresh()
@@ -168,7 +180,7 @@ namespace ResinExplorer.ViewModel
 
                 ResinDevice[] devices = await _client.GetDevicesAsync(cts.Token);
 
-                Devices = new ObservableCollection<DeviceViewModel>(devices.Select(d => new DeviceViewModel(_tokenProvider, d, _textEditService, _client, _viewService)).OrderBy(d => d.Name));
+                Devices = new ObservableCollection<DeviceViewModel>(devices.Select(CreateDeviceViewModel));
 
             }
             catch (Exception ex)

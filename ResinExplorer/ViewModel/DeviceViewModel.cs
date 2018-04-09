@@ -26,14 +26,22 @@ namespace ResinExplorer.ViewModel
 
 
         private readonly ITokenProvider _tokenProvider;
+        private readonly ISupervisorClientFactory _supervisorClientFactory;
         private ResinDevice _model;
         private readonly ITextEditService _textEditService;
         private readonly ResinApiClient _client;
         private readonly IViewService _viewService;
 
-        public DeviceViewModel(ITokenProvider tokenProvider, ResinDevice model, ITextEditService textEditService, ResinApiClient client, IViewService viewService)
+        public DeviceViewModel(
+            ITokenProvider tokenProvider, 
+            ISupervisorClientFactory supervisorClientFactory, 
+            ResinDevice model, 
+            ITextEditService textEditService, 
+            ResinApiClient client, 
+            IViewService viewService)
         {
             _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
+            _supervisorClientFactory = supervisorClientFactory;
             _model = model ?? throw new ArgumentNullException(nameof(model));
             _textEditService = textEditService ?? throw new ArgumentNullException(nameof(textEditService));
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -52,36 +60,80 @@ namespace ResinExplorer.ViewModel
             RestartCommand = new RelayCommand(Restart);
         }
 
+        private async Task<ISupervisorClient> CreateSupervisorClientAsync()
+        {
+            var token = await _tokenProvider.GetTokenAsync(new CancellationToken());
+
+            return _supervisorClientFactory.CreateProxyClient(_model.Uuid, token);
+        }
+
         private async void Blink()
         {
-            var client = new ProxySupervisorClient(_model.Uuid, await _tokenProvider.GetTokenAsync(CancellationToken.None));
+            try
+            {
+                var client = await CreateSupervisorClientAsync();
 
-            await client.BlinkAsync();
+                await client.BlinkAsync();
+            }
+            catch (Exception ex)
+            {
+                DisplayExceotion(ex);
+            }
+        }
 
-            //await _client.BlinkDeviceAsync(Id);
+        private void DisplayExceotion(Exception ex)
+        {
+            MessageBox.Show(ex.Message, ex.Source);
         }
 
         private async void Shutdown()
         {
-            if (MessageBox.Show("Are you sure?", "Device shutdown", MessageBoxButton.YesNo) == MessageBoxResult.OK)
+            try
             {
-                await _client.ShutdownDeviceAsync(Id);
+                if (MessageBox.Show("Are you sure?", "Device shutdown", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    var client = await CreateSupervisorClientAsync();
+
+                    await client.ShutdownAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                DisplayExceotion(ex);
             }
         }
 
         private async void Reboot()
         {
-            if (MessageBox.Show("Are you sure?", "Device reboot", MessageBoxButton.YesNo) == MessageBoxResult.OK)
+            try
             {
-                await _client.RebootDeviceAsync(Id);
+                if (MessageBox.Show("Are you sure?", "Device reboot", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    var client = await CreateSupervisorClientAsync();
+
+                    await client.RebootAsync(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                DisplayExceotion(ex);
             }
         }
 
         private async void Restart()
         {
-            if (MessageBox.Show("Are you sure?", "Device restart", MessageBoxButton.YesNo) == MessageBoxResult.OK)
+            try
             {
-                await _client.RestartDeviceAsync(Id);
+                if (MessageBox.Show("Are you sure?", "Device restart", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    var client = await CreateSupervisorClientAsync();
+                
+                    await client.RestartAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                DisplayExceotion(ex);
             }
         }
 

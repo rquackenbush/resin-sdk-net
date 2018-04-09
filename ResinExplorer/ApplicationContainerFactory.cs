@@ -8,6 +8,8 @@ using ResinExplorer.ViewModel;
 
 namespace ResinExplorer
 {
+    using Resin.SupervisorApi.Client;
+
     public static class ApplicationContainerFactory
     {
         public static IContainer Create()
@@ -20,6 +22,11 @@ namespace ResinExplorer
             builder.RegisterType<EditApplicationVariablesDialogViewModel>();
             builder.RegisterType<CreateDeviceDialogViewModel>();
             builder.RegisterType<EditDeviceVariablesDialogViewModel>();
+            builder.RegisterType<DeviceViewModel>();
+
+            builder.RegisterType<SupervisorClientFactory>()
+                .As<ISupervisorClientFactory>()
+                .SingleInstance();
 
             var viewService = new ViewService();
             viewService.Register<LogonDialogViewModel, LogonDialogView>();

@@ -16,7 +16,7 @@ namespace Resin.Api.Client
             _token = token;
         }
 
-        public Task<string> GetTokenAsync(CancellationToken cancellationToken)
+        public Task<string> GetTokenAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             return Task.FromResult(_token);
         }

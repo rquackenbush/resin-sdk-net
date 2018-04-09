@@ -21,29 +21,29 @@
         /// <returns></returns>
         Task BlinkAsync(CancellationToken cancellationToken = new CancellationToken());
 
-        ///// <summary>
-        ///// Triggers an update check on the supervisor. Optionally, forces an update when updates are locked.
-        ///// </summary>
-        ///// <param name="context"></param>
-        ///// <param name="cancellationToken"></param>
-        ///// <returns></returns>
-        //Task UpdateAsync(ISupervisorCallContext context, CancellationToken cancellationToken = new CancellationToken());
+        /// <summary>
+        /// Triggers an update check on the supervisor. Optionally, forces an update when updates are locked.
+        /// </summary>
+        /// <param name="force"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task UpdateAsync(bool force = false, CancellationToken cancellationToken = new CancellationToken());
 
-        ///// <summary>
-        ///// Reboots the device. This will first try to stop applications, and fail if there is an update lock. An optional "force" parameter in the body overrides the lock when true (and the lock can also be overridden from the dashboard).
-        ///// </summary>
-        ///// <param name="context"></param>
-        ///// <param name="cancellationToken"></param>
-        ///// <returns></returns>
-        //Task RebootAsync(ISupervisorCallContext context, CancellationToken cancellationToken = new CancellationToken());
+        /// <summary>
+        /// Reboots the device. This will first try to stop applications, and fail if there is an update lock. An optional "force" parameter in the body overrides the lock when true (and the lock can also be overridden from the dashboard).
+        /// </summary>
+        /// <param name="force">if set to true will cause the update lock to be overridden</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task RebootAsync(bool force = false, CancellationToken cancellationToken = new CancellationToken());
 
-        ///// <summary>
-        ///// Dangerous. Shuts down the device. This will first try to stop applications, and fail if there is an update lock. An optional "force" parameter in the body overrides the lock when true (and the lock can also be overridden from the dashboard).
-        ///// </summary>
-        ///// <param name="context"></param>
-        ///// <param name="cancellationToken"></param>
-        ///// <returns></returns>
-        //Task ShutdownAsync(ISupervisorCallContext context, CancellationToken cancellationToken = new CancellationToken());
+        /// <summary>
+        /// Dangerous. Shuts down the device. This will first try to stop applications, and fail if there is an update lock. An optional "force" parameter in the body overrides the lock when true (and the lock can also be overridden from the dashboard).
+        /// </summary>
+        /// <param name="force"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task ShutdownAsync(bool force = false, CancellationToken cancellationToken = new CancellationToken());
 
         ///// <summary>
         ///// Clears the user application's /data folder.
@@ -53,13 +53,12 @@
         ///// <returns></returns>
         //Task PurgeAsync(ISupervisorCallContext context, CancellationToken cancellationToken = new CancellationToken());
 
-        ///// <summary>
-        ///// Restarts a user application container
-        ///// </summary>
-        ///// <param name="context"></param>
-        ///// <param name="cancellationToken"></param>
-        ///// <returns></returns>
-        //Task RestartAsync(ISupervisorCallContext context, CancellationToken cancellationToken = new CancellationToken());
+        /// <summary>
+        /// Restarts a user application container
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task RestartAsync(CancellationToken cancellationToken = new CancellationToken());
 
         ///// <summary>
         ///// When the device's connection to the Resin VPN is down, by default the device performs a TCP ping heartbeat to check for connectivity. This endpoint enables such TCP ping in case it has been disabled (see DELETE /v1/tcp-ping).
